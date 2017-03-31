@@ -1,2 +1,8 @@
-# cs328
-A Git Repository for cs328 projects.
+CS 328: Fundamentals of Game Design
+===================================
+
+A series of Unity projects developed for a grade in CS 328 at the University of Nevada, Reno.
+
+by ImpUnity
+* Andy Frost
+* Tyler Goffinet
