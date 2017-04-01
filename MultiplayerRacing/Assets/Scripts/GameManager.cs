@@ -1,6 +1,6 @@
 ﻿/********************************
  * 
- * Copy © Andrew Frost 2017, all rights reserved.
+ * Copy Right © Andrew Frost 2017, all rights reserved.
  * 
  *******************************/
 

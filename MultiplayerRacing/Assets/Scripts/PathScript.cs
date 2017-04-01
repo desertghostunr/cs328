@@ -1,6 +1,6 @@
 ﻿/********************************
  * 
- * Copy © Andrew Frost 2017, all rights reserved.
+ * Copy Right © Andrew Frost 2017, all rights reserved.
  * 
  *******************************/
 
@@ -32,10 +32,6 @@ public class PathScript : MonoBehaviour
     public float startAndEndMinDist = 150;
 
     public float roomToPathRatio = 3.0f;
-
-    public GameObject artifact = null;
-
-    public GameObject spawnCover = null;
 
     public GameObject raider = null;  
 
@@ -88,13 +84,6 @@ public class PathScript : MonoBehaviour
         {
             Debug.Log( "Unable to acquire game manager!" );
         }
-
-        PlaceArtifact( );
-
-        if( spawnCover != null )
-        {
-            Instantiate( spawnCover, new Vector3( startWorld.x, startWorld.y + 19, startWorld.z ), Quaternion.identity );
-        }
     }
 	
 	// Update is called once per frame
@@ -102,32 +91,6 @@ public class PathScript : MonoBehaviour
     {
         
 	}
-
-    public void PlaceArtifact( )
-    {
-        GameObject tmp = null;
-        Quaternion newRotDir;
-
-        if( artifact != null  )
-        {
-            newRotDir = Quaternion.FromToRotation( Vector3.forward, startWorld - endWorld );
-
-            tmp = GameObject.FindGameObjectWithTag( "Artifact" );
-
-            if( tmp == null )
-            {
-                Instantiate( artifact, new Vector3( endWorld.x, endWorld.y + 7, endWorld.z ), newRotDir );
-            }
-            else
-            {
-                tmp.transform.position = new Vector3( endWorld.x, endWorld.y + 7, endWorld.z );
-                tmp.transform.rotation = newRotDir;
-            }
-
-            
-            
-        }
-    }
 
     bool GeneratePath( )
     {
