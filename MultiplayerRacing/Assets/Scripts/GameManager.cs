@@ -296,9 +296,7 @@ public class GameManager : MonoBehaviour
 
         waveNumberTxt.text = "Wave: " + wave.ToString( );
 
-
-        //artifact
-        path.PlaceArtifact( );
+        
 
         return true;
     }
