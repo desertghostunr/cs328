@@ -47,8 +47,14 @@ public class PathScript : MonoBehaviour
 
     public Vector3[ ] points3D;
 
+    public float PerlinFactor = 0.01f;
+
+    public float sigma = 3.0f;
 
     private GameManager gameManager;
+
+    static private int ROW_ORIENTATION = 0;
+    static private int COL_ORIENTATION = 1;
 
     // Use this for initialization
     void Start ()
@@ -98,6 +104,8 @@ public class PathScript : MonoBehaviour
         int rValue, lastSelect, its = 0;
         float rChange, slope, yIntersect;
 
+        float minHeight;
+
         int currX, currY, index;
 
         Vector2 position, nextPosition/*, tmpPoint*/;
@@ -107,17 +115,25 @@ public class PathScript : MonoBehaviour
         
         bool[ , ] visitedMap;
 
+        float[] mask;
+
         start.x = Random.Range( xStartCenter - xRange, xStartCenter + xRange );
         start.y = Random.Range( yStartCenter - yRange, yStartCenter + yRange );
 
         heightMap = new float[ tData.heightmapResolution, tData.heightmapResolution ];
         visitedMap = new bool[ tData.heightmapResolution, tData.heightmapResolution ];
 
+        
+
         for ( currX = 0; currX < tData.heightmapResolution; currX++ )
         {
             for ( currY = 0; currY < tData.heightmapResolution; currY++ )
             {
-                heightMap[ currX, currY ] = baseHeight;
+                heightMap[ currX, currY ] = baseHeight 
+                                           * Mathf.PerlinNoise( currX * PerlinFactor 
+                                                                      + Random.Range( -PerlinFactor, PerlinFactor ), 
+                                                                currY * PerlinFactor 
+                                                                      + Random.Range( -PerlinFactor, PerlinFactor ) );
                 visitedMap[ currX, currY ] = false;
             }
         }
@@ -213,61 +229,84 @@ public class PathScript : MonoBehaviour
             return false;
         }
 
-        //"rasterize" the line
-        for( index = 0; index < pointsList.Count; index++ )
-        {
-            rChange = Random.Range( -tolerance * 0.25f, tolerance * 0.75f );
-            for( currY = ( int ) Mathf.Max( pointsList[ index ].y - tolerance, 10 );
-                 currY < ( int ) Mathf.Min( pointsList[ index ].y + tolerance, tData.heightmapResolution - 10 );
-                 currY++ )
+        //"rasterize" the line ///////////////////
+        //get the minimum point
+        minHeight = Mathf.Infinity;
+
+        
+       for( currX = 0; currX < tData.heightmapResolution; currX++ )
+       {
+            for( currY = 0; currY < tData.heightmapResolution; currY++ )
             {
-                for( currX = ( int ) Mathf.Max( pointsList[ index ].x - tolerance, 10 );
-                     currX < ( int ) Mathf.Min( pointsList[ index ].x + tolerance, tData.heightmapResolution - 10 );
-                     currX++ )
+                if( minHeight > heightMap[ currX, currY ] )
                 {
-                    if( !visitedMap[ currX, currY ] && ( tolerance + rChange > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) ) )
-                    {
-                        heightMap[ currX, currY ] -= heightDelta;
-                        visitedMap[ currX, currY ] = true;
-                    }                   
+                    minHeight = heightMap[ currX, currY ];
                 }
             }
         }
-        
-        //carve areas around the start and end point
-        for( currY = ( int ) Mathf.Max( start.y - roomToPathRatio * tolerance, 10 );
-             currY < ( int ) Mathf.Min( start.y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
-             currY++ )            
-        {
 
-            for( currX = ( int ) Mathf.Max( start.x - roomToPathRatio * tolerance, 10 );
-                 currX < ( int ) Mathf.Min( start.x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+        //perform the rasterization
+        for( index = 0; index < pointsList.Count; index++ )
+        {
+            rChange = Random.Range( -tolerance * 0.25f, tolerance * 0.75f );
+            
+            for( currX = ( int ) Mathf.Max( pointsList[ index ].x - tolerance, 10 );
+                 currX < ( int ) Mathf.Min( pointsList[ index ].x + tolerance, tData.heightmapResolution - 10 );
                  currX++ )
             {
-                
-                if( !visitedMap[ currX, currY ] && ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) ) )
+                for( currY = ( int ) Mathf.Max( pointsList[ index ].y - tolerance, 10 );
+                     currY < ( int ) Mathf.Min( pointsList[ index ].y + tolerance, tData.heightmapResolution - 10 );
+                     currY++ )
                 {
-                    heightMap[ currX, currY ] -= heightDelta;
-                    visitedMap[ currX, currY ] = true;
-                }                
+                    if( !visitedMap[ currX, currY ] && ( tolerance + rChange > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) ) )
+                    {
+                        heightMap[ currX, currY ] = minHeight - heightDelta;
+                        visitedMap[ currX, currY ] = true;
+                    }
+                }
             }
         }
 
-        for( currY = ( int ) Mathf.Max( end.y - roomToPathRatio * tolerance, 10 );
-             currY < ( int ) Mathf.Min( end.y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
-             currY++ )
+        //carve areas around the start and end point
+
+        for( currX = ( int ) Mathf.Max( start.x - roomToPathRatio * tolerance, 10 );
+                 currX < ( int ) Mathf.Min( start.x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+                 currX++ )
         {
-            for( currX = ( int ) Mathf.Max( end.x - roomToPathRatio * tolerance, 10 );
-                 currX < ( int ) Mathf.Min( end.x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
-                 currX++ )                
+            for( currY = ( int ) Mathf.Max( start.y - roomToPathRatio * tolerance, 10 );
+                currY < ( int ) Mathf.Min( start.y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+                currY++ )            
             {
-                if( !visitedMap[ currX, currY ] && ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) ) )
+
+                if( !visitedMap[ currX, currY ] && ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) ) )
                 {
-                    heightMap[ currX, currY ] -= heightDelta;
+                    heightMap[ currX, currY ] = minHeight - heightDelta;
                     visitedMap[ currX, currY ] = true;
-                }               
+                }
             }
         }
+        for( currX = ( int ) Mathf.Max( end.x - roomToPathRatio * tolerance, 10 );
+                 currX < ( int ) Mathf.Min( end.x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+                 currX++ )
+        {
+            for( currY = ( int ) Mathf.Max( end.y - roomToPathRatio * tolerance, 10 );
+                 currY < ( int ) Mathf.Min( end.y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+                 currY++ )
+            {
+            
+                if( !visitedMap[ currX, currY ] && ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) ) )
+                {
+                    heightMap[ currX, currY ] = minHeight - heightDelta;
+                    visitedMap[ currX, currY ] = true;
+                }
+            }
+        }
+
+        mask = new float[ ( int ) Mathf.Max( sigma * 5, 5 ) ];
+
+        Generate1DGaussianMask( sigma, mask );
+
+        Convolve1DMask( heightMap, mask, visitedMap );
 
         return true;
     }
@@ -322,6 +361,145 @@ public class PathScript : MonoBehaviour
         }
 
         return nextPosition;
+    }
+
+    static public  void Generate1DGaussianMask( float sigma, float[] mask )
+    {
+        int index;
+
+        float cst, tssq, x, sum;
+
+        cst = 1.0f / ( sigma * Mathf.Sqrt( 2.0f * Mathf.PI ) );
+
+        tssq = 1.0f / ( 2 * sigma * sigma );
+
+        sum = 0.0f;
+
+        for( index = 0; index < mask.Length; index++ )
+        {
+            x = ( float ) ( index - mask.Length / 2 );
+            mask[ index ] = ( cst * Mathf.Exp( -( x * x * tssq ) ) );
+
+            sum += mask[ index ];
+        }       
+
+        for( index = 0; index < mask.Length; index++ )
+        {
+            mask[ index ] /= sum;
+        }
+
+    }
+
+    static public void Convolve1DMask( float[,] image, float[ ] mask, bool[,] applicationMask )
+    {
+        int x, y;
+
+        float[,] tmp = new float[ image.GetLength( 0 ), image.GetLength( 1 ) ];
+
+        for( x = 0; x < image.GetLength( 0 ); x++ )
+        {
+            for( y = 0; y < image.GetLength( 1 ); y++ )
+            {
+                if( applicationMask[ x, y ] )
+                {
+                    Apply1DMaskOnPoint( tmp, image, mask, x, y, ROW_ORIENTATION );
+                }
+                else
+                {
+                    tmp[ x, y ] = image[ x, y ];
+                }
+            }
+        }
+
+        for( x = 0; x < image.GetLength( 0 ); x++ )
+        {
+            for( y = 0; y < image.GetLength( 1 ); y++ )
+            {
+                if( applicationMask[ x, y ] )
+                {
+                    Apply1DMaskOnPoint( image, tmp, mask, x, y, COL_ORIENTATION );
+                }
+                else
+                {
+                    image[ x, y ] = tmp[ x, y ];
+                }
+            }
+        }
+
+
+    }
+
+    static public void Apply1DMaskOnPoint( float[,] dImage, float[,] sImage, float[] mask, int x, int y, int orientation )
+    {
+        float acc = 0.0f;
+        int maskCenter, tX, tY;
+        int index, offset;
+
+        maskCenter = mask.Length / 2;
+
+        acc = 0.0f;
+
+        if( orientation == ROW_ORIENTATION )
+        {
+            for( index = 0; index < mask.Length; index++ )
+            {
+                offset = index - maskCenter;
+
+                tX = x;
+                tY = y;
+
+                tX += offset;
+
+                tX = WrapPointX( sImage, tX );
+                tY = WrapPointY( sImage, tY );
+
+                acc += mask[ index ] * sImage[ tX, tY ];
+            }
+        }
+        else
+        {
+            for( index = 0; index < mask.Length; index++ )
+            {
+                offset = index - maskCenter;
+
+                tX = x;
+                tY = y;
+
+                tY += offset;
+
+                tX = WrapPointX( sImage, tX );
+                tY = WrapPointY( sImage, tY );
+
+                acc += mask[ index ] * sImage[ tX, tY ];
+            }
+        }
+
+        dImage[ x, y ] = acc;
+
+    }
+
+    static public int WrapPointX( float[,] image, int x)
+    {
+        return ModuloWrap( x, image.GetLength( 0 ) );
+    }
+
+    static public int WrapPointY( float[,] image, int y )
+    {
+        return ModuloWrap( y, image.GetLength( 1 ) );
+    }
+
+    static public int ModuloWrap( int val, int max )
+    {
+        int retVal;
+
+        retVal = val % max;
+
+        if( retVal < 0 )
+        {
+            retVal += max;
+        }
+
+        return retVal;
     }
 
     public void PlaceRaider( )
