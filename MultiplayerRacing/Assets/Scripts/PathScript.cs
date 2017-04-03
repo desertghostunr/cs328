@@ -23,11 +23,11 @@ public class PathScript : MonoBehaviour
 
     public float heightDelta = 5.0f;
 
-    public int maxIterations = 12;
+    public int maxIterations = 50;
 
     public float tolerance = 100.0f;
 
-    public float stepDist = 50.0f;
+    public float stepDist = 20.0f;
 
     public float startAndEndMinDist = 150;
 
@@ -144,57 +144,16 @@ public class PathScript : MonoBehaviour
                 rValue = lastSelect;
             }
 
-            nextPosition = position;
-
-            switch ( rValue )
-            {                
-                case 0: //+ 0                    
-                    nextPosition.x += rChange;
-                    break;
-
-                case 1:// + + 
-                    nextPosition.x += rChange * Random.Range( 0.8f, 1.2f ); 
-                    nextPosition.y += rChange * Random.Range( 0.8f, 1.2f );
-                    break;
-
-                case 2:// 0 +                     
-                    nextPosition.y += rChange;
-                    break;
-
-                case 3:// - +  
-                    nextPosition.x -= rChange * Random.Range( 0.8f, 1.2f );
-                    nextPosition.y += rChange * Random.Range( 0.8f, 1.2f );
-                    break;
-
-                case 4: //- 0                    
-                    nextPosition.x -= rChange;
-                    break;
-
-                case 5: //- -                    
-                    nextPosition.x -= rChange * Random.Range( 0.8f, 1.2f );
-                    nextPosition.y -= rChange * Random.Range( 0.8f, 1.2f );
-                    break;
-
-                case 6: // 0 -                    
-                    nextPosition.y -= rChange;
-                    break;
-
-                case 7: // + - 
-                    nextPosition.x += rChange * Random.Range( 0.8f, 1.2f ); ;
-                    nextPosition.y -= rChange * Random.Range( 0.8f, 1.2f ); ;
-                    break;
-                default:                    
-                    nextPosition.x += rChange;
-                    rValue = 0;
-                    break;
-            }            
+            nextPosition = SelectNextPosition( rValue, rChange, position );            
 
             if ( nextPosition.y + tolerance > tData.heightmapResolution - 75 
                  || nextPosition.x + tolerance > tData.heightmapResolution - 75
                  || nextPosition.y - tolerance < 75
-                 || nextPosition.x - tolerance < 75 )
+                 || nextPosition.x - tolerance < 75 
+                 || Vector2.Distance( start, nextPosition ) < ( Vector2.Distance(start, position ) -  ( rChange * 0.3f ) ) )
             {
                 nextPosition = position;
+                continue;
             }            
 
             if( rValue == 0 || rValue == 4 )
@@ -257,6 +216,7 @@ public class PathScript : MonoBehaviour
         //"rasterize" the line
         for( index = 0; index < pointsList.Count; index++ )
         {
+            rChange = Random.Range( -tolerance * 0.25f, tolerance * 0.75f );
             for( currY = ( int ) Mathf.Max( pointsList[ index ].y - tolerance, 10 );
                  currY < ( int ) Mathf.Min( pointsList[ index ].y + tolerance, tData.heightmapResolution - 10 );
                  currY++ )
@@ -265,7 +225,7 @@ public class PathScript : MonoBehaviour
                      currX < ( int ) Mathf.Min( pointsList[ index ].x + tolerance, tData.heightmapResolution - 10 );
                      currX++ )
                 {
-                    if( !visitedMap[ currX, currY ] && ( tolerance > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) ) )
+                    if( !visitedMap[ currX, currY ] && ( tolerance + rChange > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) ) )
                     {
                         heightMap[ currX, currY ] -= heightDelta;
                         visitedMap[ currX, currY ] = true;
@@ -279,10 +239,12 @@ public class PathScript : MonoBehaviour
              currY < ( int ) Mathf.Min( start.y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
              currY++ )            
         {
+
             for( currX = ( int ) Mathf.Max( start.x - roomToPathRatio * tolerance, 10 );
                  currX < ( int ) Mathf.Min( start.x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
                  currX++ )
             {
+                
                 if( !visitedMap[ currX, currY ] && ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) ) )
                 {
                     heightMap[ currX, currY ] -= heightDelta;
@@ -308,6 +270,58 @@ public class PathScript : MonoBehaviour
         }
 
         return true;
+    }
+
+    static public Vector2 SelectNextPosition( int rValue, float rChange, Vector2 position )
+    {
+        Vector2 nextPosition;
+
+        nextPosition = position;
+
+        switch( rValue )
+        {
+            case 0: //+ 0                    
+                nextPosition.x += rChange;
+                break;
+
+            case 1:// + + 
+                nextPosition.x += rChange * Random.Range( 0.8f, 1.2f );
+                nextPosition.y += rChange * Random.Range( 0.8f, 1.2f );
+                break;
+
+            case 2:// 0 +                     
+                nextPosition.y += rChange;
+                break;
+
+            case 3:// - +  
+                nextPosition.x -= rChange * Random.Range( 0.8f, 1.2f );
+                nextPosition.y += rChange * Random.Range( 0.8f, 1.2f );
+                break;
+
+            case 4: //- 0                    
+                nextPosition.x -= rChange;
+                break;
+
+            case 5: //- -                    
+                nextPosition.x -= rChange * Random.Range( 0.8f, 1.2f );
+                nextPosition.y -= rChange * Random.Range( 0.8f, 1.2f );
+                break;
+
+            case 6: // 0 -                    
+                nextPosition.y -= rChange;
+                break;
+
+            case 7: // + - 
+                nextPosition.x += rChange * Random.Range( 0.8f, 1.2f ); ;
+                nextPosition.y -= rChange * Random.Range( 0.8f, 1.2f ); ;
+                break;
+            default:
+                nextPosition.x += rChange;
+                rValue = 0;
+                break;
+        }
+
+        return nextPosition;
     }
 
     public void PlaceRaider( )
