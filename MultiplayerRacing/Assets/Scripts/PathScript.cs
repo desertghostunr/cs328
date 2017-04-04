@@ -51,6 +51,8 @@ public class PathScript : MonoBehaviour
 
     public float sigma = 3.0f;
 
+    public float erosionSigma = 15.0f;
+
     private GameManager gameManager;
 
     static private int ROW_ORIENTATION = 0;
@@ -115,6 +117,8 @@ public class PathScript : MonoBehaviour
         
         bool[ , ] visitedMap;
 
+        bool[,] erosionMap;
+
         float[] mask;
 
         start.x = Random.Range( xStartCenter - xRange, xStartCenter + xRange );
@@ -122,6 +126,7 @@ public class PathScript : MonoBehaviour
 
         heightMap = new float[ tData.heightmapResolution, tData.heightmapResolution ];
         visitedMap = new bool[ tData.heightmapResolution, tData.heightmapResolution ];
+        erosionMap = new bool[ tData.heightmapResolution, tData.heightmapResolution ];
 
         
 
@@ -248,20 +253,24 @@ public class PathScript : MonoBehaviour
         //perform the rasterization
         for( index = 0; index < pointsList.Count; index++ )
         {
-            rChange = Random.Range( -tolerance * 0.25f, tolerance * 0.75f );
+            rChange = Random.Range( -tolerance * 0.25f, tolerance * 0.5f );
             
-            for( currX = ( int ) Mathf.Max( pointsList[ index ].x - tolerance, 10 );
-                 currX < ( int ) Mathf.Min( pointsList[ index ].x + tolerance, tData.heightmapResolution - 10 );
+            for( currX = ( int ) Mathf.Max( pointsList[ index ].x - roomToPathRatio * tolerance, 10 );
+                 currX < ( int ) Mathf.Min( pointsList[ index ].x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
                  currX++ )
             {
-                for( currY = ( int ) Mathf.Max( pointsList[ index ].y - tolerance, 10 );
-                     currY < ( int ) Mathf.Min( pointsList[ index ].y + tolerance, tData.heightmapResolution - 10 );
+                for( currY = ( int ) Mathf.Max( pointsList[ index ].y - roomToPathRatio * tolerance, 10 );
+                     currY < ( int ) Mathf.Min( pointsList[ index ].y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
                      currY++ )
                 {
                     if( !visitedMap[ currX, currY ] && ( tolerance + rChange > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) ) )
                     {
                         heightMap[ currX, currY ] = minHeight - heightDelta;
                         visitedMap[ currX, currY ] = true;
+                    }
+                    else if( tolerance + rChange + 5 > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) )
+                    {
+                        erosionMap[ currX, currY ] = true;
                     }
                 }
             }
@@ -283,6 +292,10 @@ public class PathScript : MonoBehaviour
                     heightMap[ currX, currY ] = minHeight - heightDelta;
                     visitedMap[ currX, currY ] = true;
                 }
+                else if( roomToPathRatio * tolerance + 5 > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) )
+                {
+                    erosionMap[ currX, currY ] = true;
+                }
             }
         }
         for( currX = ( int ) Mathf.Max( end.x - roomToPathRatio * tolerance, 10 );
@@ -299,10 +312,20 @@ public class PathScript : MonoBehaviour
                     heightMap[ currX, currY ] = minHeight - heightDelta;
                     visitedMap[ currX, currY ] = true;
                 }
+                else if( roomToPathRatio * tolerance + 5 > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) )
+                {
+                    erosionMap[ currX, currY ] = true;
+                }
             }
         }
 
         mask = new float[ ( int ) Mathf.Max( sigma * 5, 5 ) ];
+
+        Generate1DGaussianMask( sigma, mask );
+
+        Convolve1DMask( heightMap, mask, visitedMap );
+
+        mask = new float[ ( int ) Mathf.Max( erosionSigma * 5, 5 ) ];
 
         Generate1DGaussianMask( sigma, mask );
 
