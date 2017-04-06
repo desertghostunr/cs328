@@ -53,6 +53,8 @@ public class PathScript : MonoBehaviour
 
     public float erosionSigma = 15.0f;
 
+    public GameObject[] players;
+
     private GameManager gameManager;
 
     static private int ROW_ORIENTATION = 0;
@@ -91,6 +93,11 @@ public class PathScript : MonoBehaviour
         if( gameManager == null )
         {
             Debug.Log( "Unable to acquire game manager!" );
+        }
+
+        for( its = 0; its < players.Length; its++)
+        {
+            players[its].transform.position = new Vector3(startWorld.x + Random.Range(-2.0f, 2.0f), players[its].transform.position.y, startWorld.z + Random.Range(-2.0f, 2.0f));
         }
     }
 	
