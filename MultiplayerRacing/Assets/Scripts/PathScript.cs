@@ -23,7 +23,9 @@ public class PathScript : MonoBehaviour
 
     public float heightDelta = 5.0f;
 
-    public int maxIterations = 50;
+    public int minIterations = 500;
+
+    public int maxIterations = 1000;
 
     public float tolerance = 100.0f;
 
@@ -67,7 +69,10 @@ public class PathScript : MonoBehaviour
 
         tData = GetComponent<Terrain>( ).terrainData;
 
-        while( !GeneratePath( ) );
+        if( !GeneratePath( ) )
+        {
+            Debug.Log( "Resorting to default path" );
+        }
        
 
         tData.SetHeights( 0, 0, heightMap );
@@ -82,9 +87,9 @@ public class PathScript : MonoBehaviour
         for( its = 0; its < points2D.Length; its++ )
         {
             points3D[ its ] = ( new Vector3( points2D[ its ].y, 
-                                tData.GetHeight( ( int ) points2D[ its ].y, 
-                                                 ( int ) points2D[ its ].x ), 
-                                points2D[ its ].x ) );
+                                             tData.GetHeight( ( int ) points2D[ its ].y, 
+                                                              ( int ) points2D[ its ].x ), 
+                                             points2D[ its ].x ) );
         }
 
 
@@ -131,6 +136,18 @@ public class PathScript : MonoBehaviour
         start.x = Random.Range( xStartCenter - xRange, xStartCenter + xRange );
         start.y = Random.Range( yStartCenter - yRange, yStartCenter + yRange );
 
+        if ( start.y + tolerance > tData.heightmapResolution - 75
+             || start.x + tolerance > tData.heightmapResolution - 75
+             || start.y - tolerance < 75
+             || start.x - tolerance < 75 )
+        {
+            start.x = Mathf.Min( start.x, ( float ) tData.heightmapResolution - 75 - tolerance );
+            start.x = Mathf.Max( start.x, ( float ) 75 + tolerance );
+            start.y = Mathf.Min( start.y, ( float ) tData.heightmapResolution - 75 - tolerance );
+            start.y = Mathf.Max( start.y, ( float ) 75 + tolerance );
+        }
+
+
         heightMap = new float[ tData.heightmapResolution, tData.heightmapResolution ];
         visitedMap = new bool[ tData.heightmapResolution, tData.heightmapResolution ];
         erosionMap = new bool[ tData.heightmapResolution, tData.heightmapResolution ];
@@ -159,7 +176,9 @@ public class PathScript : MonoBehaviour
 
         lastSelect = 9;
 
-        while (  its < maxIterations - 1 )
+        its = 0;
+
+        while ( its < maxIterations - 1 )
         {
             its++;
 
@@ -177,12 +196,18 @@ public class PathScript : MonoBehaviour
             if ( nextPosition.y + tolerance > tData.heightmapResolution - 75 
                  || nextPosition.x + tolerance > tData.heightmapResolution - 75
                  || nextPosition.y - tolerance < 75
-                 || nextPosition.x - tolerance < 75 
-                 || Vector2.Distance( start, nextPosition ) < ( Vector2.Distance(start, position ) -  ( rChange * 0.3f ) ) )
+                 || nextPosition.x - tolerance < 75 )
             {
-                nextPosition = position;
-                continue;
+                nextPosition.x = Mathf.Min( nextPosition.x, ( float ) tData.heightmapResolution - 75 - tolerance );
+                nextPosition.x = Mathf.Max( nextPosition.x, ( float ) 75 + tolerance );
+                nextPosition.y = Mathf.Min( nextPosition.y, ( float ) tData.heightmapResolution - 75 - tolerance );
+                nextPosition.y = Mathf.Max( nextPosition.y, ( float ) 75 + tolerance );
             }            
+
+            if( Vector2.Distance( start, nextPosition ) < ( Vector2.Distance( start, position ) - ( rChange * 0.3f ) ) )
+            {
+                continue;
+            }
 
             if( rValue == 0 || rValue == 4 )
             {
@@ -230,6 +255,11 @@ public class PathScript : MonoBehaviour
 
             position = nextPosition;
 
+            if( ( its > minIterations ) 
+                && ( Vector2.Distance( start, nextPosition ) >= startAndEndMinDist ) )
+            {
+                break;
+            }
         }
 
         end = position;
@@ -238,6 +268,7 @@ public class PathScript : MonoBehaviour
 
         if( ( Vector2.Distance( start, end ) < startAndEndMinDist ) )
         {
+            Debug.Log( "Dist: " + Vector2.Distance( start, end ) );
             return false;
         }
 
@@ -275,7 +306,7 @@ public class PathScript : MonoBehaviour
                         heightMap[ currX, currY ] = minHeight - heightDelta;
                         visitedMap[ currX, currY ] = true;
                     }
-                    else if( tolerance + rChange + 5 > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) )
+                    else if( tolerance + rChange + 20 > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) )
                     {
                         erosionMap[ currX, currY ] = true;
                     }
@@ -299,7 +330,7 @@ public class PathScript : MonoBehaviour
                     heightMap[ currX, currY ] = minHeight - heightDelta;
                     visitedMap[ currX, currY ] = true;
                 }
-                else if( roomToPathRatio * tolerance + 5 > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) )
+                else if( roomToPathRatio * tolerance + 20 > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) )
                 {
                     erosionMap[ currX, currY ] = true;
                 }
@@ -319,7 +350,7 @@ public class PathScript : MonoBehaviour
                     heightMap[ currX, currY ] = minHeight - heightDelta;
                     visitedMap[ currX, currY ] = true;
                 }
-                else if( roomToPathRatio * tolerance + 5 > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) )
+                else if( roomToPathRatio * tolerance + 20 > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) )
                 {
                     erosionMap[ currX, currY ] = true;
                 }
