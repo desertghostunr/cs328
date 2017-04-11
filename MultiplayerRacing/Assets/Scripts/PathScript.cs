@@ -78,18 +78,18 @@ public class PathScript : MonoBehaviour
         tData.SetHeights( 0, 0, heightMap );
 
         //convert height map points to world
-        startWorld = new Vector3( start.y, tData.GetHeight( (int)start.y, (int)start.x ), start.x );
+        startWorld = new Vector3( start.x, tData.GetHeight( (int)start.x, (int)start.y ), start.y );
 
-        endWorld = new Vector3( end.y, tData.GetHeight( ( int ) end.y, ( int ) end.x ), end.x );
+        endWorld = new Vector3( end.x, tData.GetHeight( ( int ) end.x, ( int ) end.y ), end.y );
 
         points3D = new Vector3[ maxIterations ];
 
         for( its = 0; its < points2D.Length; its++ )
         {
-            points3D[ its ] = ( new Vector3( points2D[ its ].y, 
-                                             tData.GetHeight( ( int ) points2D[ its ].y, 
-                                                              ( int ) points2D[ its ].x ), 
-                                             points2D[ its ].x ) );
+            points3D[ its ] = ( new Vector3( points2D[ its ].x, 
+                                             tData.GetHeight( ( int ) points2D[ its ].x, 
+                                                              ( int ) points2D[ its ].y ), 
+                                             points2D[ its ].y ) );
         }
 
 
@@ -154,16 +154,17 @@ public class PathScript : MonoBehaviour
 
         
 
-        for ( currX = 0; currX < tData.heightmapResolution; currX++ )
+        
+        for ( currY = 0; currY < tData.heightmapResolution; currY++ )
         {
-            for ( currY = 0; currY < tData.heightmapResolution; currY++ )
+            for ( currX = 0; currX < tData.heightmapResolution; currX++ )
             {
-                heightMap[ currX, currY ] = baseHeight 
+                heightMap[currY, currX] = baseHeight 
                                            * Mathf.PerlinNoise( currX * PerlinFactor 
                                                                       + Random.Range( -PerlinFactor, PerlinFactor ), 
                                                                 currY * PerlinFactor 
                                                                       + Random.Range( -PerlinFactor, PerlinFactor ) );
-                visitedMap[ currX, currY ] = false;
+                visitedMap[currY, currX] = false;
             }
         }
 
@@ -277,38 +278,56 @@ public class PathScript : MonoBehaviour
         minHeight = Mathf.Infinity;
 
         
-       for( currX = 0; currX < tData.heightmapResolution; currX++ )
-       {
-            for( currY = 0; currY < tData.heightmapResolution; currY++ )
+       
+        for ( currY = 0; currY < tData.heightmapResolution; currY++ )
+        {
+            for ( currX = 0; currX < tData.heightmapResolution; currX++ )
             {
-                if( minHeight > heightMap[ currX, currY ] )
+                if( minHeight > heightMap[currY, currX] )
                 {
-                    minHeight = heightMap[ currX, currY ];
+                    minHeight = heightMap[currY, currX];
                 }
             }
         }
 
+        
+        for ( currY = 0; currY < tData.heightmapResolution; currY++ )
+        {
+            for ( currX = 0; currX < tData.heightmapResolution; currX++ )
+            {
+                if ( heightMap[currY, currX] < minHeight + heightDelta )
+                {
+                    heightMap[currY, currX] = minHeight + heightDelta;
+                }
+            }
+        }
+        
+        minHeight -= heightDelta;
+
+        minHeight = Mathf.Max( 0.0f, minHeight );       
+
+
         //perform the rasterization
-        for( index = 0; index < pointsList.Count; index++ )
+        for ( index = 0; index < pointsList.Count; index++ )
         {
             rChange = Random.Range( -tolerance * 0.25f, tolerance * 0.5f );
-            
-            for( currX = ( int ) Mathf.Max( pointsList[ index ].x - roomToPathRatio * tolerance, 10 );
-                 currX < ( int ) Mathf.Min( pointsList[ index ].x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
-                 currX++ )
+
+            for ( currY = ( int ) Mathf.Max( pointsList[index].y - roomToPathRatio * tolerance, 10 );
+                  currY < ( int ) Mathf.Min( pointsList[index].y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+                  currY++ )
             {
-                for( currY = ( int ) Mathf.Max( pointsList[ index ].y - roomToPathRatio * tolerance, 10 );
-                     currY < ( int ) Mathf.Min( pointsList[ index ].y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
-                     currY++ )
-                {
-                    if( !visitedMap[ currX, currY ] && ( tolerance + rChange > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) ) )
+                for ( currX = ( int ) Mathf.Max( pointsList[ index ].x - roomToPathRatio * tolerance, 10 );
+                      currX < ( int ) Mathf.Min( pointsList[ index ].x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+                      currX++ )
+                {                
+                    if( !visitedMap[currY, currX] && ( tolerance + rChange > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) ) )
                     {
-                        heightMap[ currX, currY ] = minHeight - heightDelta;
-                        visitedMap[ currX, currY ] = true;
+                        heightMap[currY, currX] = minHeight;
+                        visitedMap[currY, currX] = true;
                     }
                     else if( tolerance + rChange + 20 > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) )
                     {
-                        erosionMap[ currX, currY ] = true;
+                        erosionMap[currY, currX] = true;
                     }
                 }
             }
@@ -316,43 +335,43 @@ public class PathScript : MonoBehaviour
 
         //carve areas around the start and end point
 
-        for( currX = ( int ) Mathf.Max( start.x - roomToPathRatio * tolerance, 10 );
-                 currX < ( int ) Mathf.Min( start.x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
-                 currX++ )
+        for ( currY = ( int ) Mathf.Max( start.y - roomToPathRatio * tolerance, 10 );
+              currY < ( int ) Mathf.Min( start.y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+              currY++ )
         {
-            for( currY = ( int ) Mathf.Max( start.y - roomToPathRatio * tolerance, 10 );
-                currY < ( int ) Mathf.Min( start.y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
-                currY++ )            
+            for ( currX = ( int ) Mathf.Max( start.x - roomToPathRatio * tolerance, 10 );
+                  currX < ( int ) Mathf.Min( start.x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+                  currX++ )
             {
-
-                if( !visitedMap[ currX, currY ] && ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) ) )
+                if( !visitedMap[currY, currX] && ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) ) )
                 {
-                    heightMap[ currX, currY ] = minHeight - heightDelta;
-                    visitedMap[ currX, currY ] = true;
+                    heightMap[currY, currX] = minHeight;
+                    visitedMap[currY, currX] = true;
                 }
                 else if( roomToPathRatio * tolerance + 20 > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) )
                 {
-                    erosionMap[ currX, currY ] = true;
+                    erosionMap[currY, currX] = true;
                 }
             }
         }
-        for( currX = ( int ) Mathf.Max( end.x - roomToPathRatio * tolerance, 10 );
-                 currX < ( int ) Mathf.Min( end.x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
-                 currX++ )
+
+        for ( currY = ( int ) Mathf.Max( end.y - roomToPathRatio * tolerance, 10 );
+              currY < ( int ) Mathf.Min( end.y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+              currY++ )
         {
-            for( currY = ( int ) Mathf.Max( end.y - roomToPathRatio * tolerance, 10 );
-                 currY < ( int ) Mathf.Min( end.y + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
-                 currY++ )
+            for ( currX = ( int ) Mathf.Max( end.x - roomToPathRatio * tolerance, 10 );
+                  currX < ( int ) Mathf.Min( end.x + roomToPathRatio * tolerance, tData.heightmapResolution - 10 );
+                  currX++ )
             {
             
-                if( !visitedMap[ currX, currY ] && ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) ) )
+                if( !visitedMap[ currY, currX ] && ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) ) )
                 {
-                    heightMap[ currX, currY ] = minHeight - heightDelta;
-                    visitedMap[ currX, currY ] = true;
+                    heightMap[currY, currX] = minHeight;
+                    visitedMap[currY, currX] = true;
                 }
                 else if( roomToPathRatio * tolerance + 20 > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) )
                 {
-                    erosionMap[ currX, currY ] = true;
+                    erosionMap[currY, currX] = true;
                 }
             }
         }
@@ -457,38 +476,94 @@ public class PathScript : MonoBehaviour
 
         float[,] tmp = new float[ image.GetLength( 0 ), image.GetLength( 1 ) ];
 
-        for( x = 0; x < image.GetLength( 0 ); x++ )
+        for( y = 0; y < image.GetLength( 0 ); y++ )
         {
-            for( y = 0; y < image.GetLength( 1 ); y++ )
+            for( x = 0; x < image.GetLength( 1 ); x++ )
             {
-                if( applicationMask[ x, y ] )
+                if( applicationMask[ y, x ] )
                 {
                     Apply1DMaskOnPoint( tmp, image, mask, x, y, ROW_ORIENTATION );
                 }
                 else
                 {
-                    tmp[ x, y ] = image[ x, y ];
+                    tmp[ y, x ] = image[ y, x ];
                 }
             }
         }
 
-        for( x = 0; x < image.GetLength( 0 ); x++ )
+        for( y = 0; y < image.GetLength( 0 ); y++ )
         {
-            for( y = 0; y < image.GetLength( 1 ); y++ )
+            for( x = 0; x < image.GetLength( 1 ); x++ )
             {
-                if( applicationMask[ x, y ] )
+                if( applicationMask[ y, x ] )
                 {
                     Apply1DMaskOnPoint( image, tmp, mask, x, y, COL_ORIENTATION );
                 }
                 else
                 {
-                    image[ x, y ] = tmp[ x, y ];
+                    image[ y, x ] = tmp[ y, x ];
                 }
             }
         }
 
 
     }
+
+    static public void ConvolveOrientedMask( float[ , ] image, float[ , ] mask, bool[ , ] applicationMask )
+    {
+        int x, y;
+
+        float[,] tmp = new float[ image.GetLength( 0 ), image.GetLength( 1 ) ];
+
+        float[,] sobelX, sobelY;
+
+        for ( y= 0; y < image.GetLength( 0 ); y++ )
+        {
+            for( x = 0; x<image.GetLength( 1 ); x++ )
+            {
+                if ( applicationMask[y, x] )
+                {
+                    //to do finish
+                }
+                else
+                {
+                    image[y, x] = tmp[y, x];
+                }
+            }
+        }
+    }
+
+    static public void Apply2DMaskOnPoint( float[,] dImage, float[,] sImage, float[,] mask, int x, int y )
+    {
+        int xC, yC, xO, yO, xT, yT;
+        int rIndex, cIndex;
+        float acc;
+
+        yC = mask.GetLength(0) / 2;
+        xC = mask.GetLength(1) / 2;
+
+        acc = 0.0f;
+
+        for( rIndex = 0; rIndex < mask.GetLength( 0 ); rIndex++ )
+        {
+            yO = rIndex - yC;
+
+            yT = WrapPointY( sImage, yO + y );
+
+            for ( cIndex = 0; cIndex < mask.GetLength(1); cIndex++ )
+            {
+                xO = cIndex - xC;
+
+                xT = WrapPointX( sImage, xO + x );
+
+                acc += mask[rIndex, cIndex] * sImage[yT, xT];
+
+            }
+        }
+
+        dImage[y, x] = acc;
+    }
+
 
     static public void Apply1DMaskOnPoint( float[,] dImage, float[,] sImage, float[] mask, int x, int y, int orientation )
     {
@@ -541,12 +616,12 @@ public class PathScript : MonoBehaviour
 
     static public int WrapPointX( float[,] image, int x)
     {
-        return ModuloWrap( x, image.GetLength( 0 ) );
+        return ModuloWrap( x, image.GetLength( 1 ) );
     }
 
     static public int WrapPointY( float[,] image, int y )
     {
-        return ModuloWrap( y, image.GetLength( 1 ) );
+        return ModuloWrap( y, image.GetLength( 0 ) );
     }
 
     static public int ModuloWrap( int val, int max )
