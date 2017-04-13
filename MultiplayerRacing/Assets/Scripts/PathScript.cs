@@ -39,6 +39,8 @@ public class PathScript : MonoBehaviour
 
     private TerrainData tData;
 
+    private Terrain terrain;
+
     private Vector2 start, end;
 
     public float[ , ] heightMap;
@@ -57,7 +59,15 @@ public class PathScript : MonoBehaviour
 
     public GameObject[] players;
 
+    public GameObject tree;
+
+    public int numberOfTrees = 100;
+
     private GameManager gameManager;
+
+    private bool[ , ] visitedMap;
+
+    private bool[,] erosionMap;
 
     static private int ROW_ORIENTATION = 0;
     static private int COL_ORIENTATION = 1;
@@ -65,9 +75,11 @@ public class PathScript : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
-        int its = 0;        
+        int its = 0;
 
-        tData = GetComponent<Terrain>( ).terrainData;
+        terrain = GetComponent<Terrain>( );
+
+        tData = terrain.terrainData;        
 
         if( !GeneratePath( ) )
         {
@@ -104,6 +116,8 @@ public class PathScript : MonoBehaviour
         {
             players[its].transform.position = new Vector3(startWorld.x + Random.Range(-2.0f, 2.0f), players[its].transform.position.y, startWorld.z + Random.Range(-2.0f, 2.0f));
         }
+
+        SpawnTrees( numberOfTrees );
     }
 	
 	// Update is called once per frame
@@ -126,10 +140,10 @@ public class PathScript : MonoBehaviour
         //List<Vector2> tmpPoints;
 
         List<Vector2> pointsList = new List<Vector2>( );
-        
-        bool[ , ] visitedMap;
 
-        bool[,] erosionMap;
+        float shift;
+
+        
 
         float[] mask;
 
@@ -152,7 +166,7 @@ public class PathScript : MonoBehaviour
         visitedMap = new bool[ tData.heightmapResolution, tData.heightmapResolution ];
         erosionMap = new bool[ tData.heightmapResolution, tData.heightmapResolution ];
 
-        
+        shift = Random.Range( 0, 10000 );
 
         
         for ( currY = 0; currY < tData.heightmapResolution; currY++ )
@@ -160,9 +174,9 @@ public class PathScript : MonoBehaviour
             for ( currX = 0; currX < tData.heightmapResolution; currX++ )
             {
                 heightMap[currY, currX] = baseHeight 
-                                           * Mathf.PerlinNoise( currX * PerlinFactor 
+                                           * Mathf.PerlinNoise( currX * PerlinFactor + shift
                                                                       + Random.Range( -PerlinFactor, PerlinFactor ), 
-                                                                currY * PerlinFactor 
+                                                                currY * PerlinFactor + shift 
                                                                       + Random.Range( -PerlinFactor, PerlinFactor ) );
                 visitedMap[currY, currX] = false;
             }
@@ -388,6 +402,8 @@ public class PathScript : MonoBehaviour
 
         Convolve1DMask( heightMap, mask, visitedMap );
 
+        //ConvolveOrientedMask( heightMap, new float[ , ] { {1, 1, 1 }, { 1, 1, 1 } }, visitedMap );
+
         return true;
     }
 
@@ -511,11 +527,23 @@ public class PathScript : MonoBehaviour
 
     static public void ConvolveOrientedMask( float[ , ] image, float[ , ] mask, bool[ , ] applicationMask )
     {
-        int x, y;
+        int x, y, mX, mY;
 
-        float[,] tmp = new float[ image.GetLength( 0 ), image.GetLength( 1 ) ];
+        float dx, dy;
 
         float[,] sobelX, sobelY;
+
+        float[,] tMask;
+
+        
+
+        sobelX = new float[ 3, 3 ] { { -1, 0, 1 }, 
+                                     { -2, 0, 2 }, 
+                                     { -1, 0, 1 } };
+
+        sobelY = new float[ 3, 3 ] { { -1, -2, -1 },
+                                     {  0,  0,  0 },
+                                     {  1,  2,  1 } }; ;
 
         for ( y= 0; y < image.GetLength( 0 ); y++ )
         {
@@ -523,11 +551,13 @@ public class PathScript : MonoBehaviour
             {
                 if ( applicationMask[y, x] )
                 {
-                    //to do finish
-                }
-                else
-                {
-                    image[y, x] = tmp[y, x];
+                    //get gradient at the pixel
+                    dx = Apply2DMaskOnPoint( image, sobelX, x, y );
+                    dy = Apply2DMaskOnPoint( image, sobelY, x, y );
+
+                    tMask = mask;
+
+                    
                 }
             }
         }
@@ -562,6 +592,37 @@ public class PathScript : MonoBehaviour
         }
 
         dImage[y, x] = acc;
+    }
+
+    static public float Apply2DMaskOnPoint( float[ , ] sImage, float[ , ] mask, int x, int y )
+    {
+        int xC, yC, xO, yO, xT, yT;
+        int rIndex, cIndex;
+        float acc;
+
+        yC = mask.GetLength( 0 ) / 2;
+        xC = mask.GetLength( 1 ) / 2;
+
+        acc = 0.0f;
+
+        for ( rIndex = 0; rIndex < mask.GetLength( 0 ); rIndex++ )
+        {
+            yO = rIndex - yC;
+
+            yT = WrapPointY( sImage, yO + y );
+
+            for ( cIndex = 0; cIndex < mask.GetLength( 1 ); cIndex++ )
+            {
+                xO = cIndex - xC;
+
+                xT = WrapPointX( sImage, xO + x );
+
+                acc += mask[rIndex, cIndex] * sImage[yT, xT];
+
+            }
+        }
+
+        return acc;
     }
 
 
@@ -650,5 +711,45 @@ public class PathScript : MonoBehaviour
         mvment.SetPath( points3D, tolerance, endWorld, gameManager );
 
         
+    }
+
+    public void SpawnTrees( int nT )
+    {
+        int index;
+        GameObject nTree;
+        Vector3 position;
+        Vector3 angle;
+
+        //spawn trees
+        if ( tree != null && terrain != null )
+        {
+            for ( index = 0; index < nT; index++ )
+            {
+                position.x = Random.Range( 60.0f,
+                                           tData.heightmapResolution - 60.0f );
+
+                position.z = Random.Range(  60.0f,
+                                           tData.heightmapResolution - 60.0f );
+
+                if( visitedMap[ (int) position.z, (int) position.x ] )
+                {
+                    continue;
+                }
+
+                position.y = 0;
+
+                position.y = terrain.SampleHeight( position );
+
+                angle = Vector3.zero;
+
+                angle.y = Random.Range( 0, 180 );
+
+                nTree = Instantiate( tree, position, Quaternion.Euler( angle ) );
+
+                nTree.transform.localScale = new Vector3( nTree.transform.localScale.x, Random.Range( 0.87f, 2.25f ), nTree.transform.localScale.z );
+
+            }
+        }
+
     }
 }
