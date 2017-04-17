@@ -11,15 +11,15 @@ This game uses the standard WASD format for player 1 and IJKL for player 2. In o
 
 * Player 1
   * Translation
-    - Foward: <keybd>W</keybd>
-    - Backward: <keybd>S</keybd>
+    - Foward: <kbd>W</kbd>
+    - Backward: <kbd>S</kbd>
   * Rotation
-    - Left: <keybd>A</keybd>
-    - Right: <keybd>D</keybd>
+    - Left: <kbd>A</kbd>
+    - Right: <kbd>D</kbd>
 * Player 2
   * Translation
-    - Foward: <keybd>I</keybd>
-    - Backward: <keybd>K</keybd>
+    - Foward: <kbd>Up</kbd>
+    - Backward: <kbd>Down</kbd>
   * Rotation
-    - Left: <keybd>J</keybd>
-    - Right: <keybd>L</keybd>
+    - Left: <kbd>Left</kbd>
+    - Right: <kbd>Right</kbd>
