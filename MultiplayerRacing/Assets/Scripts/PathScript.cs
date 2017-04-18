@@ -33,9 +33,7 @@ public class PathScript : MonoBehaviour
 
     public float startAndEndMinDist = 150;
 
-    public float roomToPathRatio = 3.0f;
-
-    public GameObject raider = null;  
+    public float roomToPathRatio = 3.0f; 
 
     private TerrainData tData;
 
@@ -59,7 +57,13 @@ public class PathScript : MonoBehaviour
 
     public GameObject[] players;
 
+    public GameObject AI;
+
+    public GameObject Flag;
+
     public GameObject tree;
+
+    public GameObject water;
 
     public int numberOfTrees = 100;
 
@@ -68,6 +72,8 @@ public class PathScript : MonoBehaviour
     private bool[ , ] visitedMap;
 
     private bool[,] erosionMap;
+
+    private float maxPathHeight, minPathHeight, medianPathHeight;
 
     static private int ROW_ORIENTATION = 0;
     static private int COL_ORIENTATION = 1;
@@ -83,11 +89,14 @@ public class PathScript : MonoBehaviour
 
         if( !GeneratePath( ) )
         {
-            Debug.Log( "Resorting to default path" );
+            Debug.Log( "ERROR!" );
         }
        
 
         tData.SetHeights( 0, 0, heightMap );
+
+        maxPathHeight = Mathf.NegativeInfinity;
+        minPathHeight = Mathf.Infinity;
 
         //convert height map points to world
         startWorld = new Vector3( start.x, tData.GetHeight( (int)start.x, (int)start.y ), start.y );
@@ -102,6 +111,21 @@ public class PathScript : MonoBehaviour
                                              tData.GetHeight( ( int ) points2D[ its ].x, 
                                                               ( int ) points2D[ its ].y ), 
                                              points2D[ its ].y ) );
+            if( Flag != null )
+            {
+                Instantiate( Flag, new Vector3( points3D[its].x, points3D[its].y + 5, points3D[its].z ), Quaternion.identity );
+            }
+
+            if ( maxPathHeight < points3D[ its ].y )
+            {
+                maxPathHeight = points3D[its].y;
+            }
+
+            if ( minPathHeight > points3D[its].y )
+            {
+                minPathHeight = points3D[its].y;
+            }
+
         }
 
 
@@ -112,10 +136,16 @@ public class PathScript : MonoBehaviour
             Debug.Log( "Unable to acquire game manager!" );
         }
 
+        medianPathHeight = ( maxPathHeight + minPathHeight ) / 2.0f;
+
+        water.transform.position = new Vector3( water.transform.position.x, medianPathHeight + 2.0f, water.transform.position.z );
+
         for( its = 0; its < players.Length; its++)
         {
-            players[its].transform.position = new Vector3(startWorld.x + Random.Range(-2.0f, 2.0f), players[its].transform.position.y, startWorld.z + Random.Range(-2.0f, 2.0f));
+            players[its].transform.position = new Vector3( startWorld.x + 5 * its - 10, medianPathHeight + 1.9f, startWorld.z + 5 * its - 10 );
         }
+
+        AI.GetComponent<Movement>( ).SetPath( points3D, gameManager );
 
         SpawnTrees( numberOfTrees );
     }
@@ -130,16 +160,13 @@ public class PathScript : MonoBehaviour
     {
 
         int rValue, lastSelect, its = 0;
-        float rChange, slope, yIntersect;
+        float rChange;
 
         float minHeight;
 
         int currX, currY, index;
 
-        Vector2 position, nextPosition/*, tmpPoint*/;
-        //List<Vector2> tmpPoints;
-
-        List<Vector2> pointsList = new List<Vector2>( );
+        Vector2 position, nextPosition;
 
         float shift;
 
@@ -223,47 +250,8 @@ public class PathScript : MonoBehaviour
 
             if( Vector2.Distance( start, nextPosition ) < ( Vector2.Distance( start, position ) - ( rChange * 0.3f ) ) )
             {
+                points2D[its] = position;
                 continue;
-            }
-
-            if( rValue == 0 || rValue == 4 )
-            {
-                for( index = ( int ) position.x; index < ( int ) nextPosition.x + 1; index++ )
-                {
-                    pointsList.Add( new Vector2( index, position.y ) );
-                }
-
-                for( index = ( int ) nextPosition.x; index < ( int ) position.x + 1; index++ )
-                {
-                    pointsList.Add( new Vector2( index, nextPosition.y ) );
-                }
-            }
-            else if( rValue == 2 || rValue == 6 )
-            {
-                for( index = ( int ) position.y; index < ( int ) nextPosition.y + 1; index++ )
-                {
-                    pointsList.Add( new Vector2( position.x, index ) );
-                }
-
-                for( index = ( int ) nextPosition.y; index < ( int ) position.y + 1; index++ )
-                {
-                    pointsList.Add( new Vector2( position.x, index ) );
-                }
-            }
-            else
-            {
-                slope = ( position.y - nextPosition.y ) / ( position.x - nextPosition.x );
-                yIntersect = position.y - slope * position.x;
-
-                for( index = ( int ) position.x; index < ( int ) nextPosition.x + 1; index++ )
-                {
-                    pointsList.Add( new Vector2( index, slope * index + yIntersect ) );
-                }
-
-                for( index = ( int ) nextPosition.x; index < ( int ) position.x + 1; index++ )
-                {
-                    pointsList.Add( new Vector2( index, slope * index + yIntersect ) );
-                }
             }
 
             lastSelect = rValue;
@@ -321,25 +309,25 @@ public class PathScript : MonoBehaviour
         minHeight = Mathf.Max( 0.0f, minHeight );
 
         //perform the rasterization
-        for ( index = 0; index < pointsList.Count; index++ )
+        for ( index = 0; index < points2D.Length; index++ )
         {
             rChange = Random.Range( -tolerance * 0.25f, tolerance * 0.5f );
 
-            for ( currY = ( int ) Mathf.Max( pointsList[index].y - roomToPathRatio * 2 * tolerance, 10 );
-                  currY < ( int ) Mathf.Min( pointsList[index].y + roomToPathRatio * 2 * tolerance, tData.heightmapResolution - 10 );
+            for ( currY = ( int ) Mathf.Max( points2D[index].y - roomToPathRatio * 2 * tolerance, 10 );
+                  currY < ( int ) Mathf.Min( points2D[index].y + roomToPathRatio * 2 * tolerance, tData.heightmapResolution - 10 );
                   currY++ )
             {
-                for ( currX = ( int ) Mathf.Max( pointsList[ index ].x - roomToPathRatio * 2 * tolerance, 10 );
-                      currX < ( int ) Mathf.Min( pointsList[ index ].x + roomToPathRatio * 2 * tolerance, tData.heightmapResolution - 10 );
+                for ( currX = ( int ) Mathf.Max( points2D[ index ].x - roomToPathRatio * 2 * tolerance, 10 );
+                      currX < ( int ) Mathf.Min( points2D[ index ].x + roomToPathRatio * 2 * tolerance, tData.heightmapResolution - 10 );
                       currX++ )
                 {                
-                    if( ( tolerance + rChange > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) ) )
+                    if( ( tolerance + rChange > Mathf.Sqrt( ( currX - points2D[ index ].x ) * ( currX - points2D[ index ].x ) + ( currY - points2D[ index ].y ) * ( currY - points2D[ index ].y ) ) ) )
                     {
-                        heightMap[currY, currX] = Mathf.SmoothStep( minHeight, heightMap[currY, currX], Vector2.Distance( pointsList[index], new Vector2( currX, currY ) ) / ( 1.5f * tolerance ) );
+                        heightMap[currY, currX] = Mathf.SmoothStep( minHeight, heightMap[currY, currX], Vector2.Distance( points2D[index], new Vector2( currX, currY ) ) / ( 1.5f * tolerance ) );
                         visitedMap[currY, currX] = true;
                         erosionMap[currY, currX] = true;
                     }
-                    else if( tolerance + rChange + 20 > Mathf.Sqrt( ( currX - pointsList[ index ].x ) * ( currX - pointsList[ index ].x ) + ( currY - pointsList[ index ].y ) * ( currY - pointsList[ index ].y ) ) )
+                    else if( tolerance + rChange + 20 > Mathf.Sqrt( ( currX - points2D[ index ].x ) * ( currX - points2D[ index ].x ) + ( currY - points2D[ index ].y ) * ( currY - points2D[ index ].y ) ) )
                     {
                         erosionMap[currY, currX] = true;
                     }
@@ -404,7 +392,7 @@ public class PathScript : MonoBehaviour
 
         Convolve1DMask( heightMap, mask, visitedMap );
 
-        Convolve1DMask( heightMap, mask, erosionMap );
+        Convolve1DMask( heightMap, mask, erosionMap );        
 
         return true;
     }
@@ -845,20 +833,6 @@ public class PathScript : MonoBehaviour
         }
 
         return retVal;
-    }
-
-    public void PlaceRaider( )
-    {
-        GameObject tmp;
-        Movement mvment;
-
-        tmp = Instantiate( raider );
-
-        mvment = tmp.GetComponent<Movement>( );
-
-        mvment.SetPath( points3D, tolerance, endWorld, gameManager );
-
-        
     }
 
     public void SpawnTrees( int nT )
