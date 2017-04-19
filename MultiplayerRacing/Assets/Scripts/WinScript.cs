@@ -8,9 +8,15 @@ public class WinScript : MonoBehaviour {
 
     private void OnTriggerEnter( Collider other )
     {
+        bool winner = false;
         if( other.tag == "GameManager" )
         {
-            gm.SetWinner( name );
+            winner = gm.SetWinner( name );
+        }
+
+        if( winner && GetComponent<Money>( ) )
+        {
+            GetComponent<Money>( ).AddMoney( 10 );
         }
     }
 }

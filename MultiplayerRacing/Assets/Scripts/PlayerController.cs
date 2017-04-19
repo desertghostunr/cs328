@@ -9,8 +9,8 @@ public class PlayerController : MonoBehaviour
     // UI Input
     public string moveAxisName;
     public string rotateAxisName;
-    public float speedMuliplier = 10.0f;
-    public float rotateMulitpler = 10.0f;
+    public float speedMultiplier = 10.0f;
+    public float rotateMultiplier = 10.0f;
     public float maxTurnAngle = 30.0f;
 
     // Input
@@ -33,7 +33,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        rigid.AddForce(transform.right * moveAxis * speedMuliplier);
-        rigid.AddTorque(transform.up * rotateAxis * rotateMulitpler);
+        rigid.AddForce(transform.right * moveAxis * speedMultiplier);
+        rigid.AddTorque(transform.up * rotateAxis * rotateMultiplier);
     }
 }

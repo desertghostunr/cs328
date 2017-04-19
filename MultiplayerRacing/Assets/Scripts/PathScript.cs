@@ -82,12 +82,14 @@ public class PathScript : MonoBehaviour
     void Start ()
     {
         int its = 0;
+        float rVal;
+        Vector3 tmpVec3;
 
         terrain = GetComponent<Terrain>( );
 
         tData = terrain.terrainData;        
 
-        if( !GeneratePath( ) )
+        if( !GeneratePath( ref its ) )
         {
             Debug.Log( "ERROR!" );
         }
@@ -103,18 +105,25 @@ public class PathScript : MonoBehaviour
 
         endWorld = new Vector3( end.x, tData.GetHeight( ( int ) end.x, ( int ) end.y ), end.y );
 
-        points3D = new Vector3[ maxIterations ];
+        points3D = new Vector3[ its ];
 
-        for( its = 0; its < points2D.Length; its++ )
+        tmpVec3 = startWorld;
+
+        for( its = 0; its < points3D.Length; its++ )
         {
             points3D[ its ] = ( new Vector3( points2D[ its ].x, 
                                              tData.GetHeight( ( int ) points2D[ its ].x, 
                                                               ( int ) points2D[ its ].y ), 
                                              points2D[ its ].y ) );
-            if( Flag != null )
+
+            rVal = Random.Range( 0.0f, 1.0f );
+
+            if( Flag != null && points3D[ its ] != tmpVec3 && rVal >= 0.7f )
             {
-                Instantiate( Flag, new Vector3( points3D[its].x, points3D[its].y + 5, points3D[its].z ), Quaternion.identity );
+                Instantiate( Flag, new Vector3( points3D[its].x,  minPathHeight + 7.5f, points3D[its].z ), Quaternion.identity );
             }
+
+            tmpVec3 = points3D[its];
 
             if ( maxPathHeight < points3D[ its ].y )
             {
@@ -138,11 +147,11 @@ public class PathScript : MonoBehaviour
 
         medianPathHeight = ( maxPathHeight + minPathHeight ) / 2.0f;
 
-        water.transform.position = new Vector3( water.transform.position.x, medianPathHeight + 2.0f, water.transform.position.z );
+        water.transform.position = new Vector3( water.transform.position.x,  5 + minPathHeight, water.transform.position.z );
 
         for( its = 0; its < players.Length; its++)
         {
-            players[its].transform.position = new Vector3( startWorld.x + 5 * its - 10, medianPathHeight + 1.9f, startWorld.z + 5 * its - 10 );
+            players[its].transform.position = new Vector3( startWorld.x + 5 * its - 10, 5 + minPathHeight - 0.1f, startWorld.z + 5 * its - 10 );
         }
 
         AI.GetComponent<Movement>( ).SetPath( points3D, gameManager );
@@ -156,7 +165,7 @@ public class PathScript : MonoBehaviour
         
 	}
 
-    bool GeneratePath( )
+    bool GeneratePath( ref int iterationsRan )
     {
 
         int rValue, lastSelect, its = 0;
@@ -226,7 +235,6 @@ public class PathScript : MonoBehaviour
         {
             its++;
 
-
             rValue = ( int ) ( 8.0f * Random.Range( 0.0f, 1.0f ) );
             rChange = Random.Range( -stepDist / 2.0f, stepDist / 2.0f ) + stepDist;
 
@@ -269,7 +277,7 @@ public class PathScript : MonoBehaviour
 
         end = position;
 
-        points2D[ maxIterations - 1 ] = end;
+        iterationsRan = its + 1;
 
         if( ( Vector2.Distance( start, end ) < startAndEndMinDist ) )
         {

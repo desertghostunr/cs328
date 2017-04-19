@@ -20,14 +20,26 @@ public class GameManager : MonoBehaviour
 
     public float delay = 5.0f;
 
+    public GameObject panel;
+
     private string winner;
+
+    private int winCounter = 0;
 
     public PathScript path;
 
     public Rigidbody[ ] players;
 
+    public Money[ ] playerMoney;
+
+    public PlayerController[ ] playerController;
+
+    public PersistentDataBase pDB;
+
     private void Start( )
     {
+        panel.SetActive( false );
+        Cursor.visible = false;
         StartCoroutine( StartDelay( ) );        
     }
 
@@ -50,30 +62,79 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void SetWinner( string name )
+    public bool SetWinner( string name )
     {
+        bool first = false;
+
         if( !gameOver )
         {
             winner = name;
 
             gameOver = true;
-            NextLevel( );
+
+            gameTxt.text = winner + " wins!";
+            first = true;
         }
+
+        winCounter++;
+
+        if( winCounter >= 2 )
+        {
+            Cursor.visible = true;
+            panel.SetActive( true );
+        }
+
+        return first;
+    }
+
+    public void IncreaseSpeed( int player )
+    {
+        if( player > playerMoney.Length || player > playerController.Length )
+        {
+            return;
+        }
+
+        if( playerMoney[ player ].moneyAmnt < 5 )
+        {
+            return;
+        }
+
+        playerMoney[player].AddMoney( -5 );
+        playerController[player].speedMultiplier += 2.0f;
+    }
+
+    public void IncreaseRotationSpeed( int player )
+    {
+        if ( player > playerMoney.Length || player > playerController.Length )
+        {
+            return;
+        }
+
+        if ( playerMoney[player].moneyAmnt < 5 )
+        {
+            return;
+        }
+
+        playerMoney[player].AddMoney( -5 );
+        playerController[player].rotateMultiplier += 2.0f;
     }
 
 
     public void NextLevel( )
     {
-        gameTxt.text = winner + " wins! Loading next level...";
+        if( pDB != null )
+        {
+            pDB.p1Data.Speed = playerController[0].speedMultiplier;
+            pDB.p1Data.RotSpeed = playerController[0].rotateMultiplier;
+            pDB.p1Data.money = playerMoney[0].moneyAmnt;
 
-        StartCoroutine( NextLevelTimer( ) );
-    }
-
-    IEnumerator NextLevelTimer( )
-    {
-
-        yield return new WaitForSeconds( 2.5f );
-
+            pDB.p2Data.Speed = playerController[1].speedMultiplier;
+            pDB.p2Data.RotSpeed = playerController[1].rotateMultiplier;
+            pDB.p2Data.money = playerMoney[1].moneyAmnt;
+        }
+        gameTxt.text = "Loading!";
+        panel.SetActive( false );
+        Cursor.visible = false;
         SceneManager.LoadScene( "scene1" );
     }
 
