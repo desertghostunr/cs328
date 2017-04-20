@@ -1,0 +1,48 @@
+Initialize engine version: 5.6.0f3 (497a0f351392)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.0]
+    Renderer: NVIDIA GeForce GTX 660 Ti (ID=0x1183)
+    Vendor:   NVIDIA
+    VRAM:     2016 MB
+    Driver:   21.21.13.7892
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\Assembly-CSharp-firstpass.dll (this message is harmless)
+Loading C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\Assembly-CSharp-firstpass.dll into Unity Child Domain
+Platform assembly: C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+Platform assembly: C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
+Loading C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
+- Completed reload, in  0.022 seconds
+Platform assembly: C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\tyler\Documents\Git Projects\CS328\cs328\MultiplayerRacing\Builds\PC,Mac,Linux\Kayak Hijack_Data\Managed\System.dll (this message is harmless)
+desktop: 1920x1080 60Hz; virtual: 3840x1090 at -1920,0
+<RI> Initializing input.
+<RI> Input initialized.
+<RI> Initialized touch support.
+UnloadTime: 3.679167 ms
+Setting up 2 worker threads for Enlighten.
+  Thread -> id: 573c -> priority: 1 
+  Thread -> id: 1378 -> priority: 1 
+Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.761322 ms
+
+Unloading 12 unused Assets to reduce memory usage. Loaded Objects now: 1722.
+Total: 0.757313 ms (FindLiveObjects: 0.054617 ms CreateObjectMapping: 0.039588 ms MarkObjects: 0.308277 ms  DeleteObjects: 0.354830 ms)
+
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 7.329742 ms
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 1727.
+Total: 0.828060 ms (FindLiveObjects: 0.075878 ms CreateObjectMapping: 0.056450 ms MarkObjects: 0.314142 ms  DeleteObjects: 0.381222 ms)
+
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 7.354668 ms
+
+Unloading 199 unused Assets to reduce memory usage. Loaded Objects now: 397.
+Total: 5.027010 ms (FindLiveObjects: 0.036656 ms CreateObjectMapping: 0.026758 ms MarkObjects: 0.176315 ms  DeleteObjects: 4.787279 ms)
+

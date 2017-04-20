@@ -58,7 +58,7 @@ public class GameManager : MonoBehaviour
 
         if ( Input.GetKey( KeyCode.Escape ) )
         {
-            SceneManager.LoadScene( "scene0" );
+            SceneManager.LoadScene( "Menu" );
         }
     }
 
@@ -136,6 +136,11 @@ public class GameManager : MonoBehaviour
         panel.SetActive( false );
         Cursor.visible = false;
         SceneManager.LoadScene( "scene1" );
+    }
+
+    public void GotoMenu()
+    {
+        SceneManager.LoadScene("Menu");
     }
 
     IEnumerator StartDelay( )
