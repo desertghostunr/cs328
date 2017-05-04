@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: d6166f1656d80884196277b985036197
+timeCreated: 1493869485
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: My Grandpa's Farm
+  fontNames:
+  - My Grandpa's Farm
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
