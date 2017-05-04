@@ -4,6 +4,16 @@ using UnityEngine;
 
 public class MenuManager : MonoBehaviour
 {
+    private GameObject[] mainScreenObjs, howToScreenObjs;
+
+    private void Start()
+    {
+        mainScreenObjs = GameObject.FindGameObjectsWithTag("MainScreen");
+        howToScreenObjs = GameObject.FindGameObjectsWithTag("HowToScreen");
+
+        ShowHowToScreen(false);
+    }
+
     public void PlayGame()
     {
         SceneManager.LoadScene("scene1");
@@ -28,7 +38,7 @@ public class MenuManager : MonoBehaviour
 
     private void ShowMainScreen(bool shouldShow)
     {
-        foreach (GameObject mainObj in GameObject.FindGameObjectsWithTag("MainScreen"))
+        foreach (GameObject mainObj in mainScreenObjs)
         {
             mainObj.SetActive(shouldShow);
         }
@@ -36,7 +46,7 @@ public class MenuManager : MonoBehaviour
 
     private void ShowHowToScreen(bool shouldShow)
     {
-        foreach (GameObject howObj in GameObject.FindGameObjectsWithTag("HowToScreen"))
+        foreach (GameObject howObj in howToScreenObjs)
         {
             howObj.SetActive(shouldShow);
         }

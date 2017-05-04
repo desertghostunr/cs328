@@ -176,8 +176,8 @@ MonoBehaviour:
     y: 0
     width: 267
     height: 641
-  m_MinSize: {x: 202, y: 221}
-  m_MaxSize: {x: 4002, y: 4021}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 13}
   m_Panes:
   - {fileID: 13}
@@ -367,9 +367,9 @@ MonoBehaviour:
     height: 620
   m_TreeViewState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 34e6ffff
-    m_LastClickedID: -6604
-    m_ExpandedIDs: 2ee6ffff34e6ffffdeecffffc8fbffff00000000862a0000962a0000aa2a0000
+    m_SelectedIDs: 
+    m_LastClickedID: 0
+    m_ExpandedIDs: f6bcffff72bdffff9cbeffffa2beffff84c4ffff38c5ffff62c6ffff68c6ffff8ef0ffff56f1ffffc8fbffff00000000ae2a0000463b0000843b0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -389,6 +389,7 @@ MonoBehaviour:
     m_SearchString: 
   m_ExpandedScenes:
   - Menu
+  - scene1
   m_CurrenRootInstanceID: 0
   m_Locked: 0
   m_CurrentSortingName: TransformSorting
@@ -453,9 +454,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: -0, y: 0, z: 0, w: -1}
   m_Size:
-    m_Target: 727.0334
+    m_Target: 688.70996
     speed: 2
-    m_Value: 727.0334
+    m_Value: 688.70996
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -578,19 +579,19 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 0
     m_Folders:
-    - Assets/Prefabs/UI
+    - Assets/Scenes
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Prefabs/UI
+  - Assets/Scenes
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\Users\tyler\Documents\Git Projects\CS328\cs328\WolfRun
   m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 95}
-    m_SelectedIDs: d0290000
-    m_LastClickedID: 10704
-    m_ExpandedIDs: 00000000682500004826000060260000122700006a27000034290000a4290000a8290000de290000e2290000002a0000262b0000282b000000ca9a3bffffff7f
+    m_SelectedIDs: 62270000
+    m_LastClickedID: 10082
+    m_ExpandedIDs: 000000006a2500004a26000062260000142700006c27000036290000a6290000aa290000e0290000e4290000022a00004c2b00004e2b000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -618,7 +619,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000682500004826000060260000122700006a27000034290000a4290000a8290000de290000e2290000002a0000262b0000282b0000
+    m_ExpandedIDs: 000000006a2500004a26000062260000142700006c27000036290000a6290000aa290000e0290000e4290000022a00004c2b00004e2b0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
