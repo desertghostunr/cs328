@@ -126,15 +126,8 @@ public class PathScript : MonoBehaviour
         {
             for( currX = 0; currX < tData.detailResolution; currX++ )
             {
-                
-                if( Random.Range( 0.0f, 1.0f ) > 0.6999f )
-                {
-                    detailMap[currY, currX] = 1;
-                }
-                else
-                {
-                    detailMap[currY, currX] = 0;
-                }
+
+                detailMap[currY, currX] = 3;
             
             }
         }
