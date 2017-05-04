@@ -35,6 +35,11 @@ public class WolfMovement : MonoBehaviour
 
         transform.Rotate( 0, sideMultiplier * rotSpeed * Time.deltaTime, 0 );
 
+        if( Mathf.Abs( sideMultiplier ) > 0.05f && forwardMultiplier > -0.05f )
+        {
+            forwardMultiplier = Mathf.Max( forwardMultiplier, Mathf.Abs( sideMultiplier ) / 4.0f );
+        }
+
         forwardDir = transform.TransformDirection( Vector3.forward );
 
         if( forwardMultiplier < -0.05f )
