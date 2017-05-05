@@ -320,7 +320,9 @@ public class PathScript : MonoBehaviour
 
         for( index = 0; index < list.Count - 1; index++ )
         {
-            newList.AddRange( GenerateListBetween2Points( list[ index ], list[ index + 1 ] ) );
+            
+
+            newList.AddRange( GenerateListBetween2Points( list[ index ], list[ index + 1 ], distanceBtwn ) );
 
             newList.Add( list[index + 1] );
         }
@@ -330,17 +332,41 @@ public class PathScript : MonoBehaviour
         list = newList;
     }
 
-    List<Vector2> GenerateListBetween2Points( Vector2 pointA, Vector2 pointB )
+    List<Vector2> GenerateListBetween2Points( Vector2 pointA, Vector2 pointB, float distanceBtwn )
     {
-        float index;
-
-        Vector2 tmpPoint;
+        int count;
 
         List<Vector2> retList = new List<Vector2>();
 
-        //to do implement
+        count = ( int ) ( Vector2.Distance( pointA, pointB ) / distanceBtwn );
+
+        retList = GetListFromMidPoints( pointA, pointB, count );
+
+        return retList;
+    }
+
+    List<Vector2> GetListFromMidPoints( Vector2 pointA, Vector2 pointB, int iterations )
+    {
+        List<Vector2> retList = new List<Vector2>( );
+
+        if( iterations > 0 )
+        {
+            Vector2 midPoint = MidPoint( pointA, pointB );
+            retList.AddRange( GetListFromMidPoints( pointA, midPoint, iterations / 2 ) );
+            retList.AddRange( GetListFromMidPoints( midPoint, pointB, iterations / 2 ) );
+        }
+        else
+        {
+            retList.Add( pointA );
+            retList.Add( pointB );
+        }
 
         return retList;
     }
     
+    Vector2 MidPoint( Vector2 pointA, Vector2 pointB )
+    {
+        return ( pointA + pointB ) / 2.0f;
+    }
+
 }
