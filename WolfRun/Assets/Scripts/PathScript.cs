@@ -45,6 +45,16 @@ public class PathScript : MonoBehaviour
 
     public Vector3[ ] points3D;
 
+    public GameObject boy;
+
+    public GameObject wolf;
+
+    public GameObject fire;
+
+    public int cornOffset = 10;
+
+    public float cullProb = 0.8f;
+
     // Use this for initialization
     void Start ()
     {
@@ -62,6 +72,28 @@ public class PathScript : MonoBehaviour
         //set details
         tData.SetDetailLayer( 0, 0, 0, detailMap );
 
+        if ( boy.GetComponent<GrassManager>( ) )
+        {
+            boy.GetComponent<GrassManager>( ).size = tData.size;
+            boy.GetComponent<GrassManager>( ).detailHeight = tData.detailHeight;
+            boy.GetComponent<GrassManager>( ).detailWidth = tData.detailWidth;
+            boy.GetComponent<GrassManager>( ).map = ( int[ , ] ) detailMap.Clone( );
+        }
+
+        if ( wolf.GetComponent<GrassManager>( ) )
+        {
+            wolf.GetComponent<GrassManager>( ).size = tData.size;
+            wolf.GetComponent<GrassManager>( ).detailHeight = tData.detailHeight;
+            wolf.GetComponent<GrassManager>( ).detailWidth = tData.detailWidth;
+            wolf.GetComponent<GrassManager>( ).map = ( int[ , ] ) detailMap.Clone( );
+        }
+
+        //add corn
+        ChangeResolution( ref detailMap, 1, 0 );
+        RandomCulling( ref detailMap, 0, cullProb );
+
+        tData.SetDetailLayer( 0, 0, 1, detailMap );
+
         //convert 2D points to world
         startWorld = new Vector3( start.x / 2.0f, tData.GetHeight( (int)start.x / 2, (int)start.y / 2 ), start.y / 2.0f );
 
@@ -78,6 +110,10 @@ public class PathScript : MonoBehaviour
 
         }
 
+
+        boy.transform.position = new Vector3( startWorld.x, boy.transform.position.y, startWorld.z );        
+
+        fire.transform.position = new Vector3( endWorld.x, fire.transform.position.y, endWorld.z );
 
         //gameManager = FindObjectOfType<GameManager>( );
 
@@ -101,7 +137,14 @@ public class PathScript : MonoBehaviour
 
         int currX, currY, index;
 
+        bool[ , ] visitedMap;
+
         Vector2 position, nextPosition;
+
+        TreeInstance cornPlant;
+        Vector3 cornPosition;
+
+        List<TreeInstance> trees;
 
         start.x = Random.Range( xStartCenter - xRange, xStartCenter + xRange );
         start.y = Random.Range( yStartCenter - yRange, yStartCenter + yRange );
@@ -161,10 +204,7 @@ public class PathScript : MonoBehaviour
                  || nextPosition.y - tolerance < 150
                  || nextPosition.x - tolerance < 150 )
             {
-                nextPosition.x = Mathf.Min( nextPosition.x, ( float ) tData.detailResolution - 150 - tolerance );
-                nextPosition.x = Mathf.Max( nextPosition.x, ( float ) 150 + tolerance );
-                nextPosition.y = Mathf.Min( nextPosition.y, ( float ) tData.detailResolution - 150 - tolerance );
-                nextPosition.y = Mathf.Max( nextPosition.y, ( float ) 150 + tolerance );
+                nextPosition = points2D[its - 1]; //back track
             }
 
             lastSelect = rValue;
@@ -188,6 +228,17 @@ public class PathScript : MonoBehaviour
         {
             Debug.Log( "Dist: " + Vector2.Distance( start, end ) );
             return false;
+        }
+
+        //allocate and initialize visited map
+        visitedMap = new bool[tData.detailResolution, tData.detailResolution];
+
+        for( currY = 0; currY < tData.detailResolution; currY++ )
+        {
+            for( currX = 0; currX < tData.detailResolution; currX++ )
+            {
+                visitedMap[currY, currX] = false;
+            }
         }
 
         //generate list of points to rasterize
@@ -220,6 +271,7 @@ public class PathScript : MonoBehaviour
                     if( ( tolerance + rChange > Mathf.Sqrt( ( currX - pointList[ index ].x ) * ( currX - pointList[ index ].x ) + ( currY - pointList[ index ].y ) * ( currY - pointList[ index ].y ) ) ) )
                     {
                         detailMap[currY, currX] = 0;
+                        visitedMap[currY, currX] = true;
                     }
                 }
             }
@@ -238,6 +290,7 @@ public class PathScript : MonoBehaviour
                 if( ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) ) )
                 {
                     detailMap[currY, currX] = 0;
+                    visitedMap[currY, currX] = true;
                 }
             }
         }
@@ -253,9 +306,45 @@ public class PathScript : MonoBehaviour
                 if( ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) ) )
                 {
                     detailMap[currY, currX] = 0;
+                    visitedMap[currY, currX] = true;
                 }
             }
-        }    
+        }
+
+        //place corn plants
+        trees = new List<TreeInstance>( );
+
+        cornPosition = Vector3.zero;
+
+        for ( currY = 50; currY < tData.size.z - 50; currY += cornOffset )
+        {
+            for ( currX = 50; currX < tData.size.x - 50; currX += cornOffset )
+            {
+                cornPlant = new TreeInstance( );
+
+                cornPlant.prototypeIndex = 0;
+                cornPlant.heightScale = 1;
+                cornPlant.widthScale = 1;
+
+                cornPosition.x = ( 1.0f / tData.size.x ) * currX;
+                cornPosition.z = ( 1.0f / tData.size.z ) * currY;
+                cornPosition.y = tData.GetInterpolatedHeight( cornPosition.x, cornPosition.z );
+
+                cornPlant.position = cornPosition;
+
+
+                if ( visitedMap[ ( int ) ( tData.detailHeight * cornPosition.z ), ( int ) ( tData.detailWidth * cornPosition.x ) ] )
+                {
+                    continue;
+                }
+
+                trees.Add( cornPlant );
+            }
+        }
+
+        tData.treeInstances = trees.ToArray( ); 
+        terrain.Flush( );
+        trees.Clear( );
 
         return true;
     }
@@ -367,6 +456,42 @@ public class PathScript : MonoBehaviour
     Vector2 MidPoint( Vector2 pointA, Vector2 pointB )
     {
         return ( pointA + pointB ) / 2.0f;
+    }
+
+    void ChangeResolution( ref int[,] map, int nRes, int delim )
+    {
+        int x, y;
+
+        for( y = 0; y < map.GetLength( 0 ); y++ )
+        {
+            for( x = 0; x < map.GetLength(0); x++ )
+            {
+                if( map[y, x] != delim )
+                {
+                    map[y, x] = nRes;
+                }
+            }
+        }
+    }
+
+    void RandomCulling( ref int[ , ] map, int delim, float prob )
+    {
+        float rand;
+
+        int x, y;
+
+        for ( y = 0; y < map.GetLength( 0 ); y++ )
+        {
+            for ( x = 0; x < map.GetLength( 0 ); x++ )
+            {
+                if ( map[y, x] != delim )
+                {
+                    rand = Random.Range( 0.0f, 1.0f );
+
+                    map[y, x] = rand <= prob ? 0 : map[y,x];
+                }
+            }
+        }
     }
 
 }
