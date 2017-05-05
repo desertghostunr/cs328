@@ -60,7 +60,7 @@ public class WolfMovement : MonoBehaviour
 
             if( grassManager.OnGrass( ) )
             {
-                forwardMultiplier /= 2.0f;
+                forwardMultiplier /= 3.0f;
             }
         }
         else if ( forwardMultiplier < -0.05f )
