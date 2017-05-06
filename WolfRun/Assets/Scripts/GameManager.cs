@@ -60,11 +60,14 @@ public class GameManager : MonoBehaviour
 
     public void SetWinner( string name )
     {
-        winner = name;
+        if( gameGoing )
+        {
+            winner = name;
+        }        
 
         if( victoryText != null )
         {
-            victoryText.text = name + " won!";
+            victoryText.text = winner + " won!";
         }
         
         StartCoroutine( GameOver( ) );

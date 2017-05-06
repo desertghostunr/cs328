@@ -59,6 +59,9 @@ public class PathScript : MonoBehaviour
     {
         int its = 0;
 
+        GrassManager boyGrass = boy.GetComponent<GrassManager>( );
+        GrassManager wolfGrass = wolf.GetComponent<GrassManager>( );
+
         terrain = GetComponent<Terrain>( );
 
         tData = terrain.terrainData;        
@@ -71,7 +74,7 @@ public class PathScript : MonoBehaviour
         //set details
         tData.SetDetailLayer( 0, 0, 0, detailMap );
 
-        GrassManager boyGrass = boy.GetComponent<GrassManager>( );
+        //slow down or stop players based on grass
 
         if ( boyGrass )
         {
@@ -80,8 +83,6 @@ public class PathScript : MonoBehaviour
             boyGrass.detailWidth = tData.detailWidth;
             boyGrass.map = ( int[ , ] ) detailMap.Clone( );
         }
-
-        GrassManager wolfGrass = wolf.GetComponent<GrassManager>( );
 
         if ( wolfGrass )
         {
@@ -96,6 +97,7 @@ public class PathScript : MonoBehaviour
         RandomCulling( ref detailMap, 0, cullProb );
 
         tData.SetDetailLayer( 0, 0, 1, detailMap );
+        
 
         //convert 2D points to world
         startWorld = new Vector3( start.x / 2.0f, tData.GetHeight( (int)start.x / 2, (int)start.y / 2 ), start.y / 2.0f );
