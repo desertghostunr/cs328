@@ -6,15 +6,13 @@ public class WolfSense : MonoBehaviour
 {
     private Camera m_camera;
     private bool senseReady = true;
-
-	// Use this for initialization
+    
 	void Start ()
     {
         m_camera = GetComponentInChildren<Camera>( );
         m_camera.gameObject.SetActive( false );
 	}
 	
-	// Update is called once per frame
 	void Update ()
     {
 		if( Input.GetKey( KeyCode.F ) && senseReady )

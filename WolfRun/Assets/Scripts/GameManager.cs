@@ -10,8 +10,8 @@ public class GameManager : MonoBehaviour
 
 
     // Private variables
-    bool isPaused = false;
-    GameObject pausePanel;
+    private bool isPaused = false;
+    private GameObject pausePanel;
 
     private Text victoryText;
     private string winner;
@@ -58,7 +58,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
     public void SetWinner( string name )
     {
         winner = name;
@@ -79,4 +78,3 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene( "Menu" );
     }
 }
-

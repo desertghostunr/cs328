@@ -1,6 +1,6 @@
 ﻿/********************************
  * 
- * Copy Right © Andrew Frost 2017, all rights reserved.
+ * Copy Right © Andrew Frost 2020, all rights reserved.
  * 
  *******************************/
 
@@ -54,8 +54,7 @@ public class PathScript : MonoBehaviour
     public int cornOffset = 10;
 
     public float cullProb = 0.8f;
-
-    // Use this for initialization
+    
     void Start ()
     {
         int its = 0;
@@ -72,20 +71,24 @@ public class PathScript : MonoBehaviour
         //set details
         tData.SetDetailLayer( 0, 0, 0, detailMap );
 
-        if ( boy.GetComponent<GrassManager>( ) )
+        GrassManager boyGrass = boy.GetComponent<GrassManager>( );
+
+        if ( boyGrass )
         {
-            boy.GetComponent<GrassManager>( ).size = tData.size;
-            boy.GetComponent<GrassManager>( ).detailHeight = tData.detailHeight;
-            boy.GetComponent<GrassManager>( ).detailWidth = tData.detailWidth;
-            boy.GetComponent<GrassManager>( ).map = ( int[ , ] ) detailMap.Clone( );
+            boyGrass.size = tData.size;
+            boyGrass.detailHeight = tData.detailHeight;
+            boyGrass.detailWidth = tData.detailWidth;
+            boyGrass.map = ( int[ , ] ) detailMap.Clone( );
         }
 
-        if ( wolf.GetComponent<GrassManager>( ) )
+        GrassManager wolfGrass = wolf.GetComponent<GrassManager>( );
+
+        if ( wolfGrass )
         {
-            wolf.GetComponent<GrassManager>( ).size = tData.size;
-            wolf.GetComponent<GrassManager>( ).detailHeight = tData.detailHeight;
-            wolf.GetComponent<GrassManager>( ).detailWidth = tData.detailWidth;
-            wolf.GetComponent<GrassManager>( ).map = ( int[ , ] ) detailMap.Clone( );
+            wolfGrass.size = tData.size;
+            wolfGrass.detailHeight = tData.detailHeight;
+            wolfGrass.detailWidth = tData.detailWidth;
+            wolfGrass.map = ( int[ , ] ) detailMap.Clone( );
         }
 
         //add corn
