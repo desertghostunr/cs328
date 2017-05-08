@@ -12,27 +12,35 @@ public class GameManager : MonoBehaviour
     // Private variables
     private bool isPaused = false;
     private GameObject pausePanel;
+    private GameObject defaultScreen;
+    private GameObject instructionScreen;
 
-    private Text victoryText;
+    private GameObject victoryText;
     private string winner;
     private bool gameGoing;
 
     private void Start()
     {
         pausePanel = GameObject.Find("Pause Panel");
+        defaultScreen = GameObject.Find("Default");
+        instructionScreen = GameObject.Find("Instructions");
+
+        // Order of disable important
+        defaultScreen.SetActive(false);
+        instructionScreen.SetActive(false);
         pausePanel.SetActive(false);
 
-        victoryText = GameObject.FindGameObjectWithTag( "VictoryText" ).GetComponent<Text>( );
+        victoryText = GameObject.FindGameObjectWithTag("VictoryText");
 
         if( victoryText != null )
         {
-            victoryText.text = "";
+            victoryText.SetActive(false);  // if only set to empty, blocks 'Resume'
         }
 
         gameGoing = true;
     }
 
-    private void Update ()
+    private void Update()
     {
         if (Input.GetButtonDown("Cancel"))
         {
@@ -54,8 +62,28 @@ public class GameManager : MonoBehaviour
             // Pause game
             Time.timeScale = 0;
             pausePanel.SetActive(true);
+            instructionScreen.SetActive(false);
+            defaultScreen.SetActive(true);
             isPaused = true;
         }
+    }
+
+    public void GotoDefaultScreen()
+    {
+        instructionScreen.SetActive(false);
+        defaultScreen.SetActive(true);
+    }
+
+    public void GotoInstructions()
+    {
+        defaultScreen.SetActive(false);
+        instructionScreen.SetActive(true);
+    }
+
+    public void GotoMainMenu()
+    {
+        TogglePauseState();
+        SceneManager.LoadScene("Menu");
     }
 
     public void SetWinner( string name )
@@ -67,7 +95,8 @@ public class GameManager : MonoBehaviour
 
         if( victoryText != null )
         {
-            victoryText.text = winner + " won!";
+            victoryText.SetActive(true);
+            victoryText.GetComponent<Text>().text = winner + " won!";
         }
         
         StartCoroutine( GameOver( ) );

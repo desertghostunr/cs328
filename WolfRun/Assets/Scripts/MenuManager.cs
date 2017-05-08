@@ -5,17 +5,23 @@ using UnityEngine;
 public class MenuManager : MonoBehaviour
 {
     private GameObject[] mainScreenObjs, howToScreenObjs;
+    private Text loadingText;
+    private string loadingStr;
 
     private void Start()
     {
         mainScreenObjs = GameObject.FindGameObjectsWithTag("MainScreen");
         howToScreenObjs = GameObject.FindGameObjectsWithTag("HowToScreen");
+        loadingText = GameObject.Find("Loading").GetComponent<Text>();
+        loadingStr = loadingText.text;
+        loadingText.text = "";
 
         ShowHowToScreen(false);
     }
 
     public void PlayGame()
     {
+        loadingText.text = loadingStr;
         SceneManager.LoadScene("scene1");
     }
 
