@@ -51,12 +51,8 @@ public class BoyController : MonoBehaviour
         move = forwardMultiplier * Vector3.forward + sideMultiplier * Vector3.right;
 
         // animation ////////////////////////////////
-        if ( Mathf.Abs( sideMultiplier ) > 0.05f || forwardMultiplier > 0.05f )
-        {
-            bAnimator.SetFloat( "Forward", forwardMultiplier, 0.1f, Time.deltaTime );
-            bAnimator.SetFloat( "Turn", Mathf.Atan2( move.x, move.z ), 0.1f, Time.deltaTime );
-            Debug.Log( "Turn" );
-        }
+        bAnimator.SetFloat( "Forward", forwardMultiplier, 0.1f, Time.deltaTime );
+        bAnimator.SetFloat( "Turn", Mathf.Atan2( move.x, move.z ), 0.1f, Time.deltaTime );
 
     }
 }
