@@ -26,7 +26,7 @@ public class WolfSense : MonoBehaviour
 
     public bool SenseOn( )
     {
-        return !senseReady;
+        return m_camera.gameObject.activeSelf;
     }
 
     public void ActivateSense( )
