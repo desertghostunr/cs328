@@ -18,6 +18,7 @@ public class WolfMovement : MonoBehaviour
     private Animator wAnimator;
 
     private AudioSource wAudio;
+    public AudioClip howlSound;
 
     private bool howlPlaying = false;
 
@@ -53,6 +54,7 @@ public class WolfMovement : MonoBehaviour
         if( wAnimator.GetBool( "Howl") && wAnimator.GetCurrentAnimatorStateInfo(0).IsName("Howl_State") )
         {
             wAnimator.SetBool( "Howl", false );
+            wAudio.clip = howlSound;
             wAudio.Play(  );
             howlPlaying = true;
         }
