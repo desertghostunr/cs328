@@ -43,7 +43,7 @@ public class PathScript : MonoBehaviour
 
     private Vector2[ ] points2D;
 
-    public Vector3[ ] points3D;
+   // public Vector3[ ] points3D;
 
     public GameObject boy;
 
@@ -58,6 +58,7 @@ public class PathScript : MonoBehaviour
     void Start ()
     {
         int its = 0;
+        int x, y;
 
         GrassManager boyGrass = boy.GetComponent<GrassManager>( );
         GrassManager wolfGrass = wolf.GetComponent<GrassManager>( );
@@ -97,24 +98,17 @@ public class PathScript : MonoBehaviour
         RandomCulling( ref detailMap, 0, cullProb );
 
         tData.SetDetailLayer( 0, 0, 1, detailMap );
-        
+
+        x = (int)((start.x / tData.detailHeight) * tData.size.x);
+        y = (int)((start.y / tData.detailHeight) * tData.size.z);
 
         //convert 2D points to world
-        startWorld = new Vector3( start.x / 2.0f, tData.GetHeight( (int)start.x / 2, (int)start.y / 2 ), start.y / 2.0f );
+        startWorld = new Vector3(x, tData.GetHeight( x, y ), y );
 
-        endWorld = new Vector3( end.x / 2.0f, tData.GetHeight( ( int ) end.x / 2, ( int ) end.y / 2 ), end.y / 2.0f );
+        x = (int)((end.x / tData.detailHeight) * tData.size.x);
+        y = (int)((end.y / tData.detailHeight) * tData.size.z);
 
-        points3D = new Vector3[ its ];
-
-        for( its = 0; its < points3D.Length; its++ )
-        {
-            points3D[ its ] = ( new Vector3( points2D[ its ].x / 2.0f, 
-                                             tData.GetHeight( ( int ) points2D[ its ].x / 2, 
-                                                              ( int ) points2D[ its ].y / 2 ), 
-                                             points2D[ its ].y /2.0f ) );
-
-        }
-
+        endWorld = new Vector3(x, tData.GetHeight(x, y), y);
 
         boy.transform.position = new Vector3( startWorld.x, boy.transform.position.y, startWorld.z );        
 

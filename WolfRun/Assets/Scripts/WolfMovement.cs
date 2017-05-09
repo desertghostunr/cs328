@@ -13,6 +13,7 @@ public class WolfMovement : MonoBehaviour
     public float rotSpeed = 3.0f;
 
     private GrassManager grassManager;
+    private GameManager gameManager;
     private WolfSense senseController;
     private CharacterController charController;
     private Animator wAnimator;
@@ -29,6 +30,7 @@ public class WolfMovement : MonoBehaviour
         wAnimator = GetComponent<Animator>( );
         senseController = GetComponentInChildren<WolfSense>( );
         grassManager = GetComponent<GrassManager>( );
+        gameManager = FindObjectOfType<GameManager>( );
         wAudio = GetComponent<AudioSource>( );
 	}
 	
@@ -128,5 +130,14 @@ public class WolfMovement : MonoBehaviour
         //apply movement
         charController.SimpleMove( forwardDir * forwardMultiplier * moveSpeed );
 
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("Triggered by " + other.tag);
+        if (other.tag == "Boy")
+        {
+            gameManager.SetWinner(name);
+        }
     }
 }

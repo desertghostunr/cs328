@@ -20,21 +20,18 @@ public class FootStep : MonoBehaviour {
 
     private void OnLeftStep()
     {
-        Debug.Log("Left Step");
         AssignRandomFootStep(true);
         AudioSource.PlayClipAtPoint(audioSource.clip, soundSourceObject.transform.position);
     }
 
     private void OnRightStep()
     {
-        Debug.Log("Right Step");
         AssignRandomFootStep(true);
         AudioSource.PlayClipAtPoint(audioSource.clip, soundSourceObject.transform.position);
     }
 
     private void OnDoubleStep()
     {
-        Debug.Log("Right Step");
         AssignRandomFootStep(false);
         AudioSource.PlayClipAtPoint(audioSource.clip, soundSourceObject.transform.position);
     }

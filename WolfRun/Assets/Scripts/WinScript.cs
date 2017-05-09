@@ -13,7 +13,7 @@ public class WinScript : MonoBehaviour {
 
     private void OnTriggerEnter( Collider other )
     {
-        if( other.tag == "End" )
+        if (other.tag == "End" )
         {
             gm.SetWinner( name );
         }
