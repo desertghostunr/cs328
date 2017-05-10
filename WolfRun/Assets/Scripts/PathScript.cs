@@ -349,7 +349,7 @@ public class PathScript : MonoBehaviour
 
                 if ( rChange < treeProb && numTrees < numberOfTrees )
                 {
-                    rChange = rChange = Random.Range( 0.0f, 1.0f );
+                    rChange = Random.Range( 0.0f, 1.0f );
                     numTrees++;
                     cornPlant.prototypeIndex = rChange <= 0.5f ? 1 : 2;
                 }
