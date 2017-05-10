@@ -39,6 +39,10 @@ public class PathScript : MonoBehaviour
 
     public int[ , ] detailMap;
 
+    public int numberOfTrees = 100;
+
+    public float treeProb = 0.20f;
+
     public Vector3 startWorld, endWorld;
 
     private Vector2[ ] points2D;
@@ -144,6 +148,8 @@ public class PathScript : MonoBehaviour
         Vector3 cornPosition;
 
         List<TreeInstance> trees;
+
+        int numTrees = 0;
 
         start.x = Random.Range( xStartCenter - xRange, xStartCenter + xRange );
         start.y = Random.Range( yStartCenter - yRange, yStartCenter + yRange );
@@ -315,11 +321,13 @@ public class PathScript : MonoBehaviour
 
         cornPosition = Vector3.zero;
 
+        numTrees = 0;
+
         for ( currY = 50; currY < tData.size.z - 50; currY += cornOffset )
         {
             for ( currX = 50; currX < tData.size.x - 50; currX += cornOffset )
             {
-                cornPlant = new TreeInstance( );
+                cornPlant = new TreeInstance( );                
 
                 cornPlant.prototypeIndex = 0;
                 cornPlant.heightScale = 1;
@@ -335,6 +343,15 @@ public class PathScript : MonoBehaviour
                 if ( visitedMap[ ( int ) ( tData.detailHeight * cornPosition.z ), ( int ) ( tData.detailWidth * cornPosition.x ) ] )
                 {
                     continue;
+                }
+
+                rChange = Random.Range( 0.0f, 1.0f );
+
+                if ( rChange < treeProb && numTrees < numberOfTrees )
+                {
+                    rChange = rChange = Random.Range( 0.0f, 1.0f );
+                    numTrees++;
+                    cornPlant.prototypeIndex = rChange <= 0.5f ? 1 : 2;
                 }
 
                 trees.Add( cornPlant );
