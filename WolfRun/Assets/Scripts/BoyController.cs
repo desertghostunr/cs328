@@ -9,6 +9,8 @@ public class BoyController : MonoBehaviour
     public float moveSpeed = 5.5f;
     public float rotSpeed = 3.0f;
 
+    public bool AI = false;
+
     private CharacterController charController;
     private Animator bAnimator;
     // Use this for initialization
@@ -21,15 +23,19 @@ public class BoyController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        float forwardMultiplier, sideMultiplier;
 
+        if( !AI )
+        {
+            Move( Input.GetAxis( "Vertical" ), Input.GetAxis( "Horizontal" ) );
+        }
+
+    }
+
+    public void Move( float forwardMultiplier, float sideMultiplier )
+    {
         Vector3 move;
 
         Vector3 forwardDir;
-
-        forwardMultiplier = Input.GetAxis( "Vertical" );
-
-        sideMultiplier = Input.GetAxis( "Horizontal" );
 
 
         //movement /////////////////////////////////////////////////////////////
@@ -53,6 +59,5 @@ public class BoyController : MonoBehaviour
         // animation ////////////////////////////////
         bAnimator.SetFloat( "Forward", forwardMultiplier, 0.1f, Time.deltaTime );
         bAnimator.SetFloat( "Turn", Mathf.Atan2( move.x, move.z ), 0.1f, Time.deltaTime );
-
     }
 }

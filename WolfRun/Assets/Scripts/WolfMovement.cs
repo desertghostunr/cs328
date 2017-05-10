@@ -12,6 +12,8 @@ public class WolfMovement : MonoBehaviour
     public float moveSpeed = 5.5f;
     public float rotSpeed = 3.0f;
 
+    public bool AI = false;
+
     private GrassManager grassManager;
     private GameManager gameManager;
     private WolfSense senseController;
@@ -37,45 +39,49 @@ public class WolfMovement : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        float forwardMultiplier, sideMultiplier;
+        if( !AI )
+        {
+            Move( Input.GetAxis( "WolfFB" ), Input.GetAxis( "WolfLR" ) );
+        }
+
+    }
+
+    public void Move( float forwardMultiplier, float sideMultiplier )
+    {
         Vector3 forwardDir;
-
-        forwardMultiplier = Input.GetAxis( "WolfFB" );
-
-        sideMultiplier = Input.GetAxis( "WolfLR" );
 
         // animations //////////////////////////////////////////////////////////
 
         //handle sense input
-        if( Input.GetButton( "WolfSense" ) )
+        if ( Input.GetButton( "WolfSense" ) )
         {
             wAnimator.SetBool( "Howl", true );
-            
+
         }
 
-        if( wAnimator.GetBool( "Howl") && wAnimator.GetCurrentAnimatorStateInfo(0).IsName("Howl_State") )
+        if ( wAnimator.GetBool( "Howl" ) && wAnimator.GetCurrentAnimatorStateInfo( 0 ).IsName( "Howl_State" ) )
         {
             wAnimator.SetBool( "Howl", false );
             wAudio.clip = howlSound;
-            wAudio.Play(  );
+            wAudio.Play( );
             howlPlaying = true;
         }
 
-        if( howlPlaying && !wAnimator.GetCurrentAnimatorStateInfo( 0 ).IsName( "Howl_State" ) )
+        if ( howlPlaying && !wAnimator.GetCurrentAnimatorStateInfo( 0 ).IsName( "Howl_State" ) )
         {
             senseController.ActivateSense( );
             howlPlaying = false;
         }
-        else if( howlPlaying )
+        else if ( howlPlaying )
         {
             return; //don't move wolf if animation is playing
         }
-             
+
         //determine speed based on input
         if ( Mathf.Abs( sideMultiplier ) > 0.05f && forwardMultiplier > -0.05f )
         {
             forwardMultiplier = Mathf.Max( forwardMultiplier, Mathf.Abs( sideMultiplier ) / 4.0f );
-        }        
+        }
 
         if ( forwardMultiplier < -0.05f )
         {
@@ -83,7 +89,7 @@ public class WolfMovement : MonoBehaviour
         }
 
         //slow movement based on grass
-        if( forwardMultiplier > 0.05f )
+        if ( forwardMultiplier > 0.05f )
         {
             if ( senseController.SenseOn( ) )
             {
@@ -95,10 +101,10 @@ public class WolfMovement : MonoBehaviour
             }
         }
 
-        
+
 
         //animation based on movement 
-        if ( forwardMultiplier < 0.33f 
+        if ( forwardMultiplier < 0.33f
              && ( Mathf.Abs( sideMultiplier ) > 0.05f || forwardMultiplier > 0.05f ) )
         {
             wAnimator.SetInteger( "RL_Controller", 1 );
@@ -124,12 +130,11 @@ public class WolfMovement : MonoBehaviour
 
         //calculate movement
         forwardDir = transform.TransformDirection( Vector3.forward );
-        
+
         transform.Rotate( 0, sideMultiplier * rotSpeed * Time.deltaTime, 0 );
 
         //apply movement
         charController.SimpleMove( forwardDir * forwardMultiplier * moveSpeed );
-
     }
 
     private void OnTriggerEnter(Collider other)

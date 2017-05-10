@@ -73,7 +73,13 @@ public class PathScript : MonoBehaviour
         }
 
         //set details
-        tData.SetDetailLayer( 0, 0, 0, detailMap );
+        tData.SetDetailLayer( 0, 0, 0, detailMap );        
+
+        //add corn
+        ChangeResolution( ref detailMap, 1, 0 );
+        RandomCulling( ref detailMap, 0, cullProb );
+
+        tData.SetDetailLayer( 0, 0, 1, detailMap );
 
         //slow down or stop players based on grass
 
@@ -92,12 +98,6 @@ public class PathScript : MonoBehaviour
             wolfGrass.detailWidth = tData.detailWidth;
             wolfGrass.map = ( int[ , ] ) detailMap.Clone( );
         }
-
-        //add corn
-        ChangeResolution( ref detailMap, 1, 0 );
-        RandomCulling( ref detailMap, 0, cullProb );
-
-        tData.SetDetailLayer( 0, 0, 1, detailMap );
 
         x = (int)((start.x / tData.detailHeight) * tData.size.x);
         y = (int)((start.y / tData.detailHeight) * tData.size.z);
