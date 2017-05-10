@@ -25,8 +25,12 @@ public class WolfMovement : MonoBehaviour
 
     private bool howlPlaying = false;
 
-	// Use this for initialization
-	void Start ()
+    private int zeroCount = 0;
+
+    private float priorFM = 0.0f;
+
+    // Use this for initialization
+    void Start ()
     {
         charController = GetComponent<CharacterController>( );
         wAnimator = GetComponent<Animator>( );
@@ -49,6 +53,16 @@ public class WolfMovement : MonoBehaviour
     public void Move( float forwardMultiplier, float sideMultiplier )
     {
         Vector3 forwardDir;
+
+        if ( zeroCount > 0 && forwardMultiplier == 0 && sideMultiplier == 0 )
+        {
+            zeroCount = 0;
+            return;
+        }
+        else if ( forwardMultiplier == 0 && sideMultiplier == 0 )
+        {
+            zeroCount++;
+        }
 
         // animations //////////////////////////////////////////////////////////
 
@@ -97,7 +111,7 @@ public class WolfMovement : MonoBehaviour
             }
             else if ( grassManager.OnGrass( ) )
             {
-                forwardMultiplier /= 2.0f;
+                forwardMultiplier = Mathf.SmoothStep( priorFM, forwardMultiplier / 2.0f, 0.25f );
             }
         }
 
@@ -127,6 +141,7 @@ public class WolfMovement : MonoBehaviour
         }
 
         //movement /////////////////////////////////////////////////////////////
+        priorFM = forwardMultiplier;
 
         //calculate movement
         forwardDir = transform.TransformDirection( Vector3.forward );
@@ -139,7 +154,6 @@ public class WolfMovement : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Triggered by " + other.tag);
         if (other.tag == "Boy")
         {
             gameManager.SetWinner(name);

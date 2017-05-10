@@ -39,21 +39,27 @@ public class WolfSense : MonoBehaviour
 
     IEnumerator StartSense( )
     {
+        int dIndex = 0;
         int index = 0;
-
-        for( index = 0; index < smell.Length; index++ )
-        {
-            smell[index].SetActive( true );
-        }
 
         m_camera.gameObject.SetActive( true );
         senseReady = false;
 
-        yield return new WaitForSeconds( 15.0f );
+        for( dIndex = 0; dIndex < 15; dIndex++ )
+        {
+            for ( index = 0; index < smell.Length; index++ )
+            {
+                smell[index].SetActive( true );
+            }
+
+            yield return new WaitForSeconds( 1.0f );
+        }
+
+        
 
         m_camera.gameObject.SetActive( false );
 
-        yield return new WaitForSeconds( 15.0f );
+        yield return new WaitForSeconds( 10.0f );
 
         senseReady = true;
     }

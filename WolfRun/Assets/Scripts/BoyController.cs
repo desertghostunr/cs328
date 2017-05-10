@@ -11,13 +11,37 @@ public class BoyController : MonoBehaviour
 
     public bool AI = false;
 
+    public float aTime = 15.0f;
+
+    public float dTime = 45.0f;
+
+    private bool canEnterGrass = false;
+
+    private bool abilityActive = false;
+
     private CharacterController charController;
     private Animator bAnimator;
+
+    private GrassManager grassManager;
+    private Vector3 lastGoodPosition;
+
+    private GameObject[ ] boySmell;
+
+    private int zeroCount = 0;
+
+    private float priorFM = 0.0f;
+
     // Use this for initialization
     void Start ()
     {
         charController = GetComponent<CharacterController>( );
         bAnimator = GetComponent<Animator>( );
+
+        lastGoodPosition = transform.position;
+
+        grassManager = GetComponent<GrassManager>( );
+
+        boySmell = GameObject.FindGameObjectsWithTag( "Scent" );
     }
 	
 	// Update is called once per frame
@@ -27,6 +51,7 @@ public class BoyController : MonoBehaviour
         if( !AI )
         {
             Move( Input.GetAxis( "Vertical" ), Input.GetAxis( "Horizontal" ) );
+            EnterGrass( Input.GetButton( "BoyAbility" ) );
         }
 
     }
@@ -37,6 +62,34 @@ public class BoyController : MonoBehaviour
 
         Vector3 forwardDir;
 
+        if( zeroCount > 0 && forwardMultiplier == 0  && sideMultiplier == 0 )
+        {
+            zeroCount = 0;
+            return;
+        }
+        else if( forwardMultiplier == 0 && sideMultiplier == 0 )
+        {
+            zeroCount++;
+        }
+
+
+        //check for obstacles
+        if ( !canEnterGrass && grassManager.OnGrass( ) )
+        {
+            transform.position = lastGoodPosition;
+
+            DeactivateSenseObjects( );
+        }
+        else if ( canEnterGrass && grassManager.OnGrass( ) )
+        {
+            forwardMultiplier = Mathf.SmoothStep( priorFM, forwardMultiplier / 4.0f, 0.25f );
+
+            DeactivateSenseObjects( );
+        }
+        else
+        {
+            lastGoodPosition = transform.position;
+        }
 
         //movement /////////////////////////////////////////////////////////////
         //move forward when turning
@@ -45,8 +98,9 @@ public class BoyController : MonoBehaviour
             forwardMultiplier = forwardMultiplier < 0.05f ? Mathf.Abs( sideMultiplier ) / 1.5f : forwardMultiplier;
         }
 
-
         //calculate movement
+
+        priorFM = forwardMultiplier;
 
         forwardDir = transform.TransformDirection( Vector3.forward );
         transform.Rotate( 0, sideMultiplier * rotSpeed * Time.deltaTime, 0 );
@@ -58,6 +112,41 @@ public class BoyController : MonoBehaviour
 
         // animation ////////////////////////////////
         bAnimator.SetFloat( "Forward", forwardMultiplier, 0.1f, Time.deltaTime );
-        bAnimator.SetFloat( "Turn", Mathf.Atan2( move.x, move.z ), 0.1f, Time.deltaTime );
+        bAnimator.SetFloat( "Turn", Mathf.Atan2( move.x, move.z ), 0.1f, Time.deltaTime );        
+    }
+
+    public void EnterGrass( bool grassKey )
+    {
+        if( grassKey && !abilityActive )
+        {
+            StartCoroutine( GrassRoutine( ) );
+        }
+    }
+
+    private void DeactivateSenseObjects( )
+    {
+        int index = 0;
+
+        for ( index = 0; index < boySmell.Length; index++ )
+        {
+            boySmell[index].SetActive( false );
+        }
+    }
+
+    IEnumerator GrassRoutine( )
+    {
+        
+
+        abilityActive = true;
+
+        canEnterGrass = true;              
+
+        yield return new WaitForSeconds( aTime );
+
+        canEnterGrass = false;
+
+        yield return new WaitForSeconds( dTime );
+
+        abilityActive = false;
     }
 }
