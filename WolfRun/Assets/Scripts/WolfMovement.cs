@@ -22,6 +22,7 @@ public class WolfMovement : MonoBehaviour
 
     private AudioSource wAudio;
     public AudioClip howlSound;
+    public AudioClip biteSound;
 
     private bool howlPlaying = false;
 
@@ -115,8 +116,6 @@ public class WolfMovement : MonoBehaviour
             }
         }
 
-
-
         //animation based on movement 
         if ( forwardMultiplier < 0.33f
              && ( Mathf.Abs( sideMultiplier ) > 0.05f || forwardMultiplier > 0.05f ) )
@@ -156,6 +155,11 @@ public class WolfMovement : MonoBehaviour
     {
         if (other.tag == "Boy")
         {
+            gameManager.ToggleBlackScreen();
+
+            wAudio.clip = biteSound;
+            wAudio.Play();
+
             gameManager.SetWinner(name);
         }
     }

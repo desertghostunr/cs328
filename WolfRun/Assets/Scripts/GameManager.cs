@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     // Public variables
-
+    public GameObject blackScreenCamera;
 
     // Private variables
     private bool isPaused = false;
@@ -18,6 +18,9 @@ public class GameManager : MonoBehaviour
     private GameObject victoryText;
     private string winner;
     private bool gameGoing;
+
+    private Camera[] gameCameras;
+    private bool isBlackScreen = false;
 
     private void Start()
     {
@@ -38,6 +41,8 @@ public class GameManager : MonoBehaviour
         }
 
         gameGoing = true;
+
+        gameCameras = Camera.allCameras;
     }
 
     private void Update()
@@ -84,6 +89,11 @@ public class GameManager : MonoBehaviour
     {
         TogglePauseState();
         SceneManager.LoadScene("Menu");
+    }
+
+    public void ToggleBlackScreen()
+    {
+        blackScreenCamera.SetActive(!isBlackScreen);
     }
 
     public void SetWinner( string name )
