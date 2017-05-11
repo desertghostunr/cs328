@@ -19,7 +19,6 @@ public class GameManager : MonoBehaviour
     private string winner;
     private bool gameGoing;
 
-    private Camera[] gameCameras;
     private bool isBlackScreen = false;
 
     private void Start()
@@ -41,8 +40,6 @@ public class GameManager : MonoBehaviour
         }
 
         gameGoing = true;
-
-        gameCameras = Camera.allCameras;
     }
 
     private void Update()
@@ -117,6 +114,7 @@ public class GameManager : MonoBehaviour
         gameGoing = false;
         yield return new WaitForSeconds( 5.0f );
         gameGoing = true;
+        ToggleBlackScreen();
         SceneManager.LoadScene( "Menu" );
     }
 }

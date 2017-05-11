@@ -74,11 +74,15 @@ public class BoyController : MonoBehaviour
 
 
         //check for obstacles
-        if ( !canEnterGrass && grassManager.OnGrass( ) )
+        if ( !canEnterGrass && grassManager.DeepInGrass( ) )
         {
             transform.position = lastGoodPosition;
 
             DeactivateSenseObjects( );
+        }
+        else if( !canEnterGrass && grassManager.OnGrass())
+        {
+            DeactivateSenseObjects();
         }
         else if ( canEnterGrass && grassManager.OnGrass( ) )
         {
