@@ -4,24 +4,28 @@ using UnityEngine;
 
 public class MenuManager : MonoBehaviour
 {
-    private GameObject[] mainScreenObjs, howToScreenObjs;
-    private Text loadingText;
-    private string loadingStr;
+    //private GameObject mainScreen, howToScreen, loadingScreen;
+    //public Text loadingText;
 
     private void Start()
     {
-        mainScreenObjs = GameObject.FindGameObjectsWithTag("MainScreen");
-        howToScreenObjs = GameObject.FindGameObjectsWithTag("HowToScreen");
-        loadingText = GameObject.Find("Loading").GetComponent<Text>();
-        loadingStr = loadingText.text;
-        loadingText.text = "";
+        //mainScreen = GameObject.FindGameObjectWithTag("MainScreen");
+        //howToScreen = GameObject.FindGameObjectWithTag("HowToScreen");
+        //loadingScreen = GameObject.FindGameObjectWithTag("Loading");
 
-        ShowHowToScreen(false);
+        //if (loadingScreen != null)
+        //{
+        //    loadingText = loadingScreen.GetComponentInChildren<Text>();
+        //    loadingStr = loadingText.text;
+        //    loadingText.text = "";
+        //}
+
+        //ShowHowToScreen(false);
     }
 
     public void PlayGame()
     {
-        loadingText.text = loadingStr;
+        //loadingText.text = loadingStr;
         SceneManager.LoadScene("scene1");
     }
 
@@ -44,17 +48,17 @@ public class MenuManager : MonoBehaviour
 
     private void ShowMainScreen(bool shouldShow)
     {
-        foreach (GameObject mainObj in mainScreenObjs)
-        {
-            mainObj.SetActive(shouldShow);
-        }
+        //foreach (GameObject mainObj in mainScreenObjs)
+        //{
+        //    mainObj.SetActive(shouldShow);
+        //}
     }
 
     private void ShowHowToScreen(bool shouldShow)
     {
-        foreach (GameObject howObj in howToScreenObjs)
-        {
-            howObj.SetActive(shouldShow);
-        }
+        //foreach (GameObject howObj in howToScreenObjs)
+        //{
+        //    howObj.SetActive(shouldShow);
+        //}
     }
 }
