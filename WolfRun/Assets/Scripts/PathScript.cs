@@ -7,7 +7,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using System.Threading;
 
 public class PathScript : MonoBehaviour
 {
@@ -29,7 +29,9 @@ public class PathScript : MonoBehaviour
 
     public float startAndEndMinDist = 150;
 
-    public float roomToPathRatio = 3.0f; 
+    public float roomToPathRatio = 3.0f;
+
+    public float rasterizationAreaMultiplier = 2.0f;
 
     private TerrainData tData;
 
@@ -137,12 +139,14 @@ public class PathScript : MonoBehaviour
     bool GeneratePath( ref int iterationsRan )
     {
         List<Vector2> pointList;
+        List<Thread> threadList;
+
         int rValue, lastSelect, its = 0;
         float rChange;
 
         int currX, currY, index;
 
-        bool[ , ] visitedMap;
+        int detailRes;
 
         Vector2 position, nextPosition;
 
@@ -153,6 +157,9 @@ public class PathScript : MonoBehaviour
 
         int numTrees = 0;
 
+
+        detailRes = tData.detailResolution;
+
         start.x = Random.Range( xStartCenter - xRange, xStartCenter + xRange );
         start.y = Random.Range( yStartCenter - yRange, yStartCenter + yRange );
 
@@ -161,24 +168,22 @@ public class PathScript : MonoBehaviour
              || start.y - tolerance < 150
              || start.x - tolerance < 150 )
         {
-            start.x = Mathf.Min( start.x, ( float ) tData.detailResolution - 150 - tolerance );
+            start.x = Mathf.Min( start.x, ( float ) detailRes - 150 - tolerance );
             start.x = Mathf.Max( start.x, ( float ) 150 + tolerance );
-            start.y = Mathf.Min( start.y, ( float ) tData.detailResolution - 150 - tolerance );
+            start.y = Mathf.Min( start.y, ( float ) detailRes - 150 - tolerance );
             start.y = Mathf.Max( start.y, ( float ) 150 + tolerance );
         }
 
 
-        detailMap = new int[ tData.detailResolution, tData.detailResolution ];
+        detailMap = new int[detailRes, detailRes];
 
         
         //initialize detail map
-        for( currY = 0; currY < tData.detailResolution; currY++ )
+        for( currY = 0; currY < detailRes; currY++ )
         {
-            for( currX = 0; currX < tData.detailResolution; currX++ )
+            for( currX = 0; currX < detailRes; currX++ )
             {
-
-                detailMap[currY, currX] = 3;
-            
+                detailMap[currY, currX] = 3;           
             }
         }
 
@@ -206,8 +211,8 @@ public class PathScript : MonoBehaviour
 
             nextPosition = SelectNextPosition( rValue, stepDist, position );            
 
-            if ( nextPosition.y + tolerance > tData.detailResolution - 150
-                 || nextPosition.x + tolerance > tData.detailResolution - 150
+            if ( nextPosition.y + tolerance > detailRes - 150
+                 || nextPosition.x + tolerance > detailRes - 150
                  || nextPosition.y - tolerance < 150
                  || nextPosition.x - tolerance < 150 )
             {
@@ -237,17 +242,6 @@ public class PathScript : MonoBehaviour
             return false;
         }
 
-        //allocate and initialize visited map
-        visitedMap = new bool[tData.detailResolution, tData.detailResolution];
-
-        for( currY = 0; currY < tData.detailResolution; currY++ )
-        {
-            for( currX = 0; currX < tData.detailResolution; currX++ )
-            {
-                visitedMap[currY, currX] = false;
-            }
-        }
-
         //generate list of points to rasterize
         pointList = new List<Vector2>( );
 
@@ -257,65 +251,44 @@ public class PathScript : MonoBehaviour
             pointList.Add( points2D[index] ); //push back the point
         }
 
+        //"rasterize" the line ///////////////////    
+
         InsertIntermediatePoints( ref pointList, tolerance / 2.0f );
 
 
-        //"rasterize" the line ///////////////////        
+        //initialize threads
 
-        //perform the rasterization
-        for ( index = 0; index < pointList.Count; index++ )
+        threadList = new List<Thread>( );
+
+        for( index = 0; index < SystemInfo.processorCount; index++ )
         {
-            rChange = Random.Range( -tolerance * 0.25f, tolerance * 0.5f );
+            its = pointList.Count / ( SystemInfo.processorCount );
 
-            for ( currY = ( int ) Mathf.Max( pointList[index].y - roomToPathRatio * 2 * tolerance, 10 );
-                  currY < ( int ) Mathf.Min( pointList[index].y + roomToPathRatio * 2 * tolerance, tData.detailResolution - 10 );
-                  currY++ )
-            {
-                for ( currX = ( int ) Mathf.Max( pointList[ index ].x - roomToPathRatio * 2 * tolerance, 10 );
-                      currX < ( int ) Mathf.Min( pointList[ index ].x + roomToPathRatio * 2 * tolerance, tData.detailResolution - 10 );
-                      currX++ )
-                {                
-                    if( ( tolerance + rChange > Mathf.Sqrt( ( currX - pointList[ index ].x ) * ( currX - pointList[ index ].x ) + ( currY - pointList[ index ].y ) * ( currY - pointList[ index ].y ) ) ) )
-                    {
-                        detailMap[currY, currX] = 0;
-                        visitedMap[currY, currX] = true;
-                    }
-                }
-            }
+            its = its + ( pointList.Count - ( its * ( SystemInfo.processorCount ) ) );
+
+            threadList.Add( new Thread( ( ) => RasterizeMaze( pointList, 
+                                                              its * index, 
+                                                              Mathf.Max( its * index + its, 
+                                                                         pointList.Count ),
+                                                              detailRes ) ) );
+
+            
+
         }
 
-        //carve areas around the start and end point
+        //perform the rasterization on the terrain
 
-        for ( currY = ( int ) Mathf.Max( start.y - roomToPathRatio * 2 * tolerance, 10 );
-              currY < ( int ) Mathf.Min( start.y + roomToPathRatio * 2 * tolerance, tData.detailResolution - 10 );
-              currY++ )
+        for ( index = 0; index < SystemInfo.processorCount; index++ )
         {
-            for ( currX = ( int ) Mathf.Max( start.x - roomToPathRatio * 2 * tolerance, 10 );
-                  currX < ( int ) Mathf.Min( start.x + roomToPathRatio * 2 * tolerance, tData.detailResolution - 10 );
-                  currX++ )
-            {
-                if( ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - start.x ) * ( currX - start.x ) + ( currY - start.y ) * ( currY - start.y ) ) ) )
-                {
-                    detailMap[currY, currX] = 0;
-                    visitedMap[currY, currX] = true;
-                }
-            }
+            threadList[index].Start( );
         }
 
-        for ( currY = ( int ) Mathf.Max( end.y - roomToPathRatio * 2 * tolerance, 10 );
-              currY < ( int ) Mathf.Min( end.y + roomToPathRatio * 2 * tolerance, tData.detailResolution - 10 );
-              currY++ )
+        RasterizeEndPoint( start );
+        RasterizeEndPoint( end );
+
+        for ( index = 0; index < SystemInfo.processorCount; index++ )
         {
-            for ( currX = ( int ) Mathf.Max( end.x - roomToPathRatio * 2 * tolerance, 10 );
-                  currX < ( int ) Mathf.Min( end.x + roomToPathRatio * 2 * tolerance, tData.detailResolution - 10 );
-                  currX++ )
-            {
-                if( ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - end.x ) * ( currX - end.x ) + ( currY - end.y ) * ( currY - end.y ) ) ) )
-                {
-                    detailMap[currY, currX] = 0;
-                    visitedMap[currY, currX] = true;
-                }
-            }
+            threadList[index].Join( );
         }
 
         //place corn plants
@@ -342,7 +315,7 @@ public class PathScript : MonoBehaviour
                 cornPlant.position = cornPosition;
 
 
-                if ( visitedMap[ ( int ) ( tData.detailHeight * cornPosition.z ), ( int ) ( tData.detailWidth * cornPosition.x ) ] )
+                if ( detailMap[ ( int ) ( tData.detailHeight * cornPosition.z ), ( int ) ( tData.detailWidth * cornPosition.x ) ] == 0 )
                 {
                     continue;
                 }
@@ -365,7 +338,7 @@ public class PathScript : MonoBehaviour
         trees.Clear( );
 
         return true;
-    }
+    }    
 
     static public Vector2 SelectNextPosition( int rValue, float rChange, Vector2 position )
     {
@@ -420,7 +393,7 @@ public class PathScript : MonoBehaviour
     }
 
 
-    void InsertIntermediatePoints( ref List<Vector2> list, float distanceBtwn )
+    public static void InsertIntermediatePoints( ref List<Vector2> list, float distanceBtwn )
     {
         int index;
         List<Vector2> newList = new List<Vector2>();
@@ -439,7 +412,7 @@ public class PathScript : MonoBehaviour
         list = newList;
     }
 
-    List<Vector2> GenerateListBetween2Points( Vector2 pointA, Vector2 pointB, float distanceBtwn )
+    public static List<Vector2> GenerateListBetween2Points( Vector2 pointA, Vector2 pointB, float distanceBtwn )
     {
         int count;
 
@@ -452,7 +425,7 @@ public class PathScript : MonoBehaviour
         return retList;
     }
 
-    List<Vector2> GetListFromMidPoints( Vector2 pointA, Vector2 pointB, int iterations )
+    public static List<Vector2> GetListFromMidPoints( Vector2 pointA, Vector2 pointB, int iterations )
     {
         List<Vector2> retList = new List<Vector2>( );
 
@@ -471,12 +444,12 @@ public class PathScript : MonoBehaviour
         return retList;
     }
     
-    Vector2 MidPoint( Vector2 pointA, Vector2 pointB )
+    public static Vector2 MidPoint( Vector2 pointA, Vector2 pointB )
     {
         return ( pointA + pointB ) / 2.0f;
     }
 
-    void ChangeResolution( ref int[,] map, int nRes, int delim )
+    public static void ChangeResolution( ref int[,] map, int nRes, int delim )
     {
         int x, y;
 
@@ -492,7 +465,7 @@ public class PathScript : MonoBehaviour
         }
     }
 
-    void RandomCulling( ref int[ , ] map, int delim, float prob )
+    public static void RandomCulling( ref int[ , ] map, int delim, float prob )
     {
         float rand;
 
@@ -507,6 +480,52 @@ public class PathScript : MonoBehaviour
                     rand = Random.Range( 0.0f, 1.0f );
 
                     map[y, x] = rand <= prob ? 0 : map[y,x];
+                }
+            }
+        }
+    }
+
+
+    private void RasterizeMaze( List<Vector2> pointList, int start, int end, int detailRes )
+    {
+        int currX, currY, index;
+
+        for ( index = 0; index < pointList.Count; index++ )
+        {
+
+            for ( currY = ( int ) Mathf.Max( pointList[index].y - rasterizationAreaMultiplier * tolerance, 10 );
+                  currY < ( int ) Mathf.Min( pointList[index].y + rasterizationAreaMultiplier * tolerance, detailRes - 10 );
+                  currY++ )
+            {
+                for ( currX = ( int ) Mathf.Max( pointList[index].x - rasterizationAreaMultiplier * tolerance, 10 );
+                      currX < ( int ) Mathf.Min( pointList[index].x + rasterizationAreaMultiplier * tolerance, detailRes - 10 );
+                      currX++ )
+                {
+                    if ( ( ( tolerance ) > Mathf.Sqrt( ( currX - pointList[index].x ) * ( currX - pointList[index].x ) + ( currY - pointList[index].y ) * ( currY - pointList[index].y ) ) ) )
+                    {
+                        detailMap[currY, currX] = 0;
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void RasterizeEndPoint( Vector2 point )
+    {
+        int currX, currY;
+
+        for ( currY = ( int ) Mathf.Max( point.y - roomToPathRatio * tolerance, 10 );
+              currY < ( int ) Mathf.Min( point.y + roomToPathRatio * tolerance, tData.detailResolution - 10 );
+              currY++ )
+        {
+            for ( currX = ( int ) Mathf.Max( point.x - roomToPathRatio * tolerance, 10 );
+                  currX < ( int ) Mathf.Min( point.x + roomToPathRatio * tolerance, tData.detailResolution - 10 );
+                  currX++ )
+            {
+                if ( ( roomToPathRatio * tolerance > Mathf.Sqrt( ( currX - point.x ) * ( currX - point.x ) + ( currY - point.y ) * ( currY - point.y ) ) ) )
+                {
+                    detailMap[currY, currX] = 0;
                 }
             }
         }
