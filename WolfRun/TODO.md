@@ -11,6 +11,7 @@ Features
 * Add UI ability indicators
 * Maze entrance and exit - Andy
 * Sign/Cabin at enter/exit - Tyler
+* Add wolf proximity danger music - Tyler
 
 Fixes
 -----
