@@ -62,6 +62,8 @@ public class BoyController : MonoBehaviour
 
         Vector3 forwardDir;
 
+        float reverseMultiplier = 1.0f;
+
         if( zeroCount > 0 && forwardMultiplier == 0  && sideMultiplier == 0 )
         {
             zeroCount = 0;
@@ -96,11 +98,12 @@ public class BoyController : MonoBehaviour
         }
 
         //movement /////////////////////////////////////////////////////////////
-        //move forward when turning
-        if ( Mathf.Abs( sideMultiplier ) > 0.05f )
+
+        if( forwardMultiplier < -0.05f )
         {
-            forwardMultiplier = forwardMultiplier < 0.05f ? Mathf.Abs( sideMultiplier ) / 1.5f : forwardMultiplier;
+            reverseMultiplier /= 4.0f;
         }
+
 
         //calculate movement
 
@@ -110,9 +113,20 @@ public class BoyController : MonoBehaviour
         transform.Rotate( 0, sideMultiplier * rotSpeed * Time.deltaTime, 0 );
 
         //apply movement
-        charController.SimpleMove( forwardDir * forwardMultiplier * moveSpeed );
+        charController.SimpleMove( forwardDir * forwardMultiplier * moveSpeed * reverseMultiplier );
 
-        move = forwardMultiplier * Vector3.forward + sideMultiplier * Vector3.right;
+        if( forwardMultiplier >= 0.00f )
+        {
+            move = forwardMultiplier * Vector3.forward + sideMultiplier * Vector3.right;
+        }
+        else
+        {
+            move = forwardMultiplier * Vector3.back + sideMultiplier * Vector3.right;
+        }
+        
+
+
+        Debug.Log( forwardMultiplier + " " + Mathf.Atan2( move.x, move.z ) );
 
         // animation ////////////////////////////////
         bAnimator.SetFloat( "Forward", forwardMultiplier, 0.1f, Time.deltaTime );
