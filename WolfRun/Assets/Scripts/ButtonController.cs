@@ -20,13 +20,22 @@ public class ButtonController : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     public void OnPointerEnter(PointerEventData pointer)
     {
-        childText.text = threatText;
-        childText.color = threatColor;
+        SetBloodEffect(true);
     }
 
     public void OnPointerExit(PointerEventData pointer)
     {
-        childText.text = defaultText;
-        childText.color = defaultColor;
+        SetBloodEffect(false);
+    }
+
+    private void OnDisable()
+    {
+        SetBloodEffect(false);
+    }
+
+    private void SetBloodEffect(bool shouldSet)
+    {
+        childText.text = shouldSet ? threatText : defaultText;
+        childText.color = shouldSet ? threatColor : defaultColor;
     }
 }

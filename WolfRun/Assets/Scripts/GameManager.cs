@@ -114,7 +114,7 @@ public class GameManager : MonoBehaviour
         gameGoing = false;
         yield return new WaitForSeconds( 5.0f );
         gameGoing = true;
-        ToggleBlackScreen();
+        if (isBlackScreen) ToggleBlackScreen();
         SceneManager.LoadScene( "Menu" );
     }
 }

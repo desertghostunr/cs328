@@ -15,10 +15,10 @@ public class MusicController : MonoBehaviour
 
 	void Update()
     {
-        StartCoroutine(PlayOccasionalCrows());
+        if (!crowSource.isPlaying) StartCoroutine(PlayCrowsAfterWait());
 	}
 
-    IEnumerator PlayOccasionalCrows()
+    IEnumerator PlayCrowsAfterWait()
     {
         float randomWaitTime = Random.Range(waitRange.x, waitRange.y);
         yield return new WaitForSeconds(randomWaitTime);
