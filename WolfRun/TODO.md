@@ -1,14 +1,15 @@
 Todo List
 =========
 
-* Audio - Tyler
-* Maze - Andy /
-* Maize - Andy /
-* UI - Tyler
-* Wolf Howl - Andy /
-* Wolf sense - Andy /
-* Breadcrumbs - Tyler
-* Opening scene - Andy /
-* Winning conditions:
-  * Boy - Andy /
-  * Wolf - Tyler
+Features
+--------
+* Human AI - Andy
+* Wolf AI - Andy
+* Networking - Tyler
+* Boy VR - Tyler & Andy
+* Wolf not see smoke - Tyler
+
+Fixes
+-----
+* Human collider improvment - Andy
+* UI glitches (prep button) - Tyler
