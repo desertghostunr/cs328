@@ -123,10 +123,6 @@ public class BoyController : MonoBehaviour
         {
             move = forwardMultiplier * Vector3.back + sideMultiplier * Vector3.right;
         }
-        
-
-
-        Debug.Log( forwardMultiplier + " " + Mathf.Atan2( move.x, move.z ) );
 
         // animation ////////////////////////////////
         bAnimator.SetFloat( "Forward", forwardMultiplier, 0.1f, Time.deltaTime );
