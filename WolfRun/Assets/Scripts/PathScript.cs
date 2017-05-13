@@ -260,19 +260,17 @@ public class PathScript : MonoBehaviour
 
         threadList = new List<Thread>( );
 
-        for( index = 0; index < SystemInfo.processorCount; index++ )
+        its = pointList.Count / ( SystemInfo.processorCount );
+
+        its = its + ( pointList.Count - ( its * ( SystemInfo.processorCount ) ) );
+
+        for ( index = 0; index < SystemInfo.processorCount; index++ )
         {
-            its = pointList.Count / ( SystemInfo.processorCount );
-
-            its = its + ( pointList.Count - ( its * ( SystemInfo.processorCount ) ) );
-
             threadList.Add( new Thread( ( ) => RasterizeMaze( pointList, 
                                                               its * index, 
                                                               Mathf.Max( its * index + its, 
                                                                          pointList.Count ),
-                                                              detailRes ) ) );
-
-            
+                                                              detailRes ) ) );        
 
         }
 
@@ -339,6 +337,17 @@ public class PathScript : MonoBehaviour
         tData.treeInstances = trees.ToArray( ); 
         terrain.Flush( );
         trees.Clear( );
+
+
+        // create a mesh of the path
+
+        System.DateTime t1 =  System.DateTime.Now;
+
+        MakeMesh( );
+
+        System.DateTime t2 = System.DateTime.Now;
+
+        Debug.Log( "Mesh Generation Time:" + " " + ( t2.Subtract( t1 ).TotalSeconds ) );
 
         return true;
     }    
@@ -488,6 +497,107 @@ public class PathScript : MonoBehaviour
         }
     }
 
+    public static void ConvertToBinaryImage( ref int[ , ] map, int startRow, int endRow, bool invert = false )
+    {
+        int x, y;
+
+        for ( y = Mathf.Max( startRow, 0 ); y < Mathf.Min( endRow, map.GetLength( 0 ) ); y++ )
+        {
+            for ( x = 0; x < map.GetLength( 1 ); x++ )
+            {
+                if ( invert )
+                {
+                    map[y, x] = map[y, x] <= 0 ? 1 : 0;
+                }
+                else
+                {
+                    map[y, x] = map[y, x] <= 0 ? 0 : 1;
+                }
+            }
+        }
+    }
+
+    //requires a binary image with 0 and edgeValue as the only two values
+    public static void ThinToBinaryEdges( ref int[ , ] map, int startRow, int endRow, int edgeValue )
+    {
+        int x, y;
+
+        for( y = Mathf.Max( startRow, 0 ); y < Mathf.Min( endRow, map.GetLength( 0 ) ); y++ )
+        {
+            for( x = 0; x < map.GetLength( 1 ); x++ )
+            {
+                if( !DifferentNeighbor( map, x, y, edgeValue ) )
+                {
+                    map[y, x] = 0;
+                }
+            }
+        }       
+    }
+
+
+    public static bool DifferentNeighbor( int[ , ] map, int x, int y, int value )
+    {
+        int iX, iY;
+
+        for( iY = Mathf.Max( y - 1, 0 ); iY < Mathf.Min( y + 1, map.GetLength( 0 ) ); iY++ )
+        {
+            for ( iX = Mathf.Max( x - 1, 0 ); iX < Mathf.Min( x + 1, map.GetLength( 1 ) ); iX++ )
+            {
+                if( map[ iY, iX ] != value )
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+    private void MakeMesh( )
+    {
+        int[,] meshMap;
+        int index;
+        int rows;
+
+        List<Thread> threadList = new List<Thread>();
+
+
+        //create a map of points to use in mesh
+        meshMap = ( int[ , ] ) detailMap.Clone( );
+
+        rows = meshMap.GetLength( 0 ) / SystemInfo.processorCount;
+
+        rows = rows + ( meshMap.GetLength( 0 ) - ( rows * SystemInfo.processorCount ) );
+
+        for ( index = 0; index < SystemInfo.processorCount; index++ )
+        {
+            threadList.Add( new Thread( ( ) => ConvertToBinaryImage( ref meshMap, rows * index, rows * index + rows, true ) ) );
+            threadList[index].Start( );
+        }
+
+
+        for ( index = 0; index < SystemInfo.processorCount; index++ )
+        {
+            threadList[index].Join( );
+        }
+
+        threadList.Clear( );
+
+        for ( index = 0; index < SystemInfo.processorCount; index++ )
+        {
+            threadList.Add( new Thread( ( ) => ThinToBinaryEdges( ref meshMap, rows * index, rows * index + rows, 1 ) ) );
+            threadList[index].Start( );
+        }
+
+
+        for ( index = 0; index < SystemInfo.processorCount; index++ )
+        {
+            threadList[index].Join( );
+        }
+
+
+    }
 
     private void RasterizeMaze( List<Vector2> pointList, int start, int end, int detailRes )
     {
@@ -532,6 +642,6 @@ public class PathScript : MonoBehaviour
                 }
             }
         }
-    }
+    }   
 
 }
