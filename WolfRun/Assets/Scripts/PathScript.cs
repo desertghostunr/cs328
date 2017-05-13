@@ -298,6 +298,8 @@ public class PathScript : MonoBehaviour
 
         numTrees = 0;
 
+        its = 0;
+
         for ( currY = 50; currY < tData.size.z - 50; currY += cornOffset )
         {
             for ( currX = 50; currX < tData.size.x - 50; currX += cornOffset )
@@ -317,6 +319,7 @@ public class PathScript : MonoBehaviour
 
                 if ( detailMap[ ( int ) ( tData.detailHeight * cornPosition.z ), ( int ) ( tData.detailWidth * cornPosition.x ) ] == 0 )
                 {
+                    its++;
                     continue;
                 }
 
