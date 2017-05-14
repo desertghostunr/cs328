@@ -107,13 +107,13 @@ public class PathScript : MonoBehaviour
 
         
 
-        x = (int)((start.x / tData.detailHeight) * tData.size.x);
+        x = (int)((start.x / tData.detailWidth) * tData.size.x);
         y = (int)((start.y / tData.detailHeight) * tData.size.z);
 
         //convert 2D points to world
         startWorld = new Vector3(x, tData.GetHeight( x, y ), y );
 
-        x = (int)((end.x / tData.detailHeight) * tData.size.x);
+        x = (int)((end.x / tData.detailWidth) * tData.size.x);
         y = (int)((end.y / tData.detailHeight) * tData.size.z);
 
         endWorld = new Vector3(x, tData.GetHeight(x, y), y);
@@ -138,6 +138,8 @@ public class PathScript : MonoBehaviour
 
     bool GeneratePath( ref int iterationsRan )
     {
+        System.DateTime t1 =  System.DateTime.Now;
+
         List<Vector2> pointList;
         List<Thread> threadList;
 
@@ -339,15 +341,22 @@ public class PathScript : MonoBehaviour
         trees.Clear( );
 
 
-        // create a mesh of the path
+        // Add collider triggers around the path
+        pointList.Clear( );
+        pointList = new List<Vector2>( );
 
-        System.DateTime t1 =  System.DateTime.Now;
+        for ( index = 0; index < iterationsRan; index++ )
+        {
+            pointList.Add( points2D[index] ); //push back the point
+        }
 
-        MakeMesh( );
+
+
+
 
         System.DateTime t2 = System.DateTime.Now;
 
-        Debug.Log( "Mesh Generation Time:" + " " + ( t2.Subtract( t1 ).TotalSeconds ) );
+        Debug.Log( "Path Generation Time:" + " " + ( t2.Subtract( t1 ).TotalSeconds ) );
 
         return true;
     }    
@@ -404,6 +413,44 @@ public class PathScript : MonoBehaviour
         return nextPosition;
     }
 
+    public static List<BoxCollider> GenerateBoxColliderListOnPath
+    (
+        List<Vector2> points,
+        int start,
+        int end,
+        int dWidth,
+        int dHeight,
+        Vector2 dMSize,
+        float colliderHeight,
+        float colliderWidth
+    )
+    {
+        List<BoxCollider> colliderList;
+        Vector2 A, B;
+        Bounds tmpBounds;
+        int index;
+
+        colliderList = new List<BoxCollider>( );
+
+        if( ( end - start < 1 ) && ( end - start >= 0 ) )
+        {
+            //calculate position and bounds
+            A.x = ( int ) ( ( points[0].x / dWidth ) * dMSize.x );
+
+
+            colliderList.Add( new BoxCollider( ) );
+            tmpBounds = colliderList[colliderList.Count - 1].bounds;
+            colliderList[colliderList.Count - 1].size = new Vector3( colliderWidth, colliderHeight, colliderWidth );
+            return colliderList;
+        }
+
+        for( index = Mathf.Max( start, 0 ); index < Mathf.Min( end - 1, points.Count - 1 ); index++ )
+        {
+            A.x = ( int ) ( ( points[ index ].x / dWidth ) * dMSize.x );
+        }
+
+        return colliderList;
+    }
 
     public static void InsertIntermediatePoints( ref List<Vector2> list, float distanceBtwn )
     {

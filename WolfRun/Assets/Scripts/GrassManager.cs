@@ -80,7 +80,7 @@ public class GrassManager : MonoBehaviour
             return new Vector3(-1, -1, -1);
         }
 
-        x = (int)((nX / detailHeight) * size.x);
+        x = (int)((nX / detailWidth) * size.x);
         y = (int)((nY / detailHeight) * size.z);
 
         return new Vector3(x, transform.position.y, y );
@@ -89,7 +89,7 @@ public class GrassManager : MonoBehaviour
 
     private int GetX()
     {
-        return (int)(detailHeight * ((1.0f / size.x) * transform.position.x));
+        return (int)(detailWidth * ((1.0f / size.x) * transform.position.x));
     }
 
     private int GetY()
