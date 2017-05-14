@@ -65,8 +65,9 @@ public class PathScript : MonoBehaviour
     
     void Start ()
     {
+        System.DateTime t1 =  System.DateTime.Now;
         int its = 0;
-        int x, y;
+        float x, y;
 
         GrassManager boyGrass = boy.GetComponent<GrassManager>( );
         GrassManager wolfGrass = wolf.GetComponent<GrassManager>( );
@@ -109,16 +110,16 @@ public class PathScript : MonoBehaviour
 
         
 
-        x = (int)((start.x / tData.detailWidth) * tData.size.x);
-        y = (int)((start.y / tData.detailHeight) * tData.size.z);
+        x = ((start.x / tData.detailWidth) * tData.size.x);
+        y = ((start.y / tData.detailHeight) * tData.size.z);
 
         //convert 2D points to world
-        startWorld = new Vector3(x, tData.GetHeight( x, y ), y );
+        startWorld = new Vector3(x, tData.GetHeight( (int) x, (int) y ), y );
 
-        x = (int)((end.x / tData.detailWidth) * tData.size.x);
-        y = (int)((end.y / tData.detailHeight) * tData.size.z);
+        x = ((end.x / tData.detailWidth) * tData.size.x);
+        y = ((end.y / tData.detailHeight) * tData.size.z);
 
-        endWorld = new Vector3(x, tData.GetHeight(x, y), y);
+        endWorld = new Vector3(x, tData.GetHeight( (int) x, (int) y), y);
 
         boy.transform.position = new Vector3( startWorld.x, boy.transform.position.y, startWorld.z );        
 
@@ -130,6 +131,10 @@ public class PathScript : MonoBehaviour
         {
             Debug.Log( "Unable to acquire game manager!" );
         }*/
+
+        System.DateTime t2 = System.DateTime.Now;
+
+        Debug.Log( "Path Generation Time:" + " " + ( t2.Subtract( t1 ).TotalSeconds ) );
     }
 	
 	// Update is called once per frame
@@ -140,8 +145,6 @@ public class PathScript : MonoBehaviour
 
     bool GeneratePath( ref int iterationsRan )
     {
-        System.DateTime t1 =  System.DateTime.Now;
-
         List<Vector2> pointList;
 
         int rValue, lastSelect, its = 0;
@@ -340,25 +343,7 @@ public class PathScript : MonoBehaviour
             pointList.Add( points2D[index] ); //push back the point
         }
 
-        List<BoxCollider> boxColliderList = GenerateBoxColliderListOnPath( pointList, 0, pointList.Count, tData.detailWidth, tData.detailHeight, tData.size, 100, tolerance / 2.0f );
-
-        BoxCollider[ ] bCArray;
-
-        for( index = 0; index < boxColliderList.Count; index++ )
-        {
-            gameObject.AddComponent<BoxCollider>( );            
-        }
-
-        bCArray = gameObject.GetComponents<BoxCollider>( );
-
-        for ( index = 0; index < boxColliderList.Count; index++ )
-        {
-            bCArray[index] = boxColliderList[index];
-        }
-
-        System.DateTime t2 = System.DateTime.Now;
-
-        Debug.Log( "Path Generation Time:" + " " + ( t2.Subtract( t1 ).TotalSeconds ) );
+        AddCollidersToPath( pointList );        
 
         return true;
     }    
@@ -415,58 +400,146 @@ public class PathScript : MonoBehaviour
         return nextPosition;
     }
 
-    private List<BoxCollider> GenerateBoxColliderListOnPath
+    private void AddCollidersToPath( List<Vector2> pointList, bool trigger = true )
+    {
+        GameObject startGO, endGO;
+        List<GameObject> gOList;
+
+        int index;
+
+        startGO = GenerateSphereAtPoint( start, tData.detailWidth, tData.detailHeight, tData.size, ( tolerance * roomToPathRatio ) / 2.0f, trigger );
+
+        gOList = GenerateBoxColliderListOnPath( pointList, 0, pointList.Count, tData.detailWidth, tData.detailHeight, tData.size, 10, tolerance, trigger );
+
+        endGO = GenerateSphereAtPoint( end, tData.detailWidth, tData.detailHeight, tData.size, ( tolerance * roomToPathRatio ) / 2.0f, trigger );
+
+
+        startGO.transform.position = new Vector3( startGO.transform.position.x,
+                                                  terrain.SampleHeight( startGO.transform.position ),
+                                                  startGO.transform.position.z );
+
+
+        for ( index = 0; index < gOList.Count; index++ )
+        {
+            gOList[index].transform.position = new Vector3( gOList[index].transform.position.x, 
+                                                            terrain.SampleHeight( gOList[index].transform.position ), 
+                                                            gOList[index].transform.position.z );
+        }
+
+        endGO.transform.position = new Vector3( endGO.transform.position.x,
+                                                terrain.SampleHeight( endGO.transform.position ),
+                                                endGO.transform.position.z );
+
+    }
+
+    private GameObject GenerateSphereAtPoint
+    ( 
+        Vector2 point, 
+        int dWidth, 
+        int dHeight, 
+        Vector3 dMSize, 
+        float radius,  
+        bool trigger = true 
+    )
+    {
+        GameObject tmpGO;
+        SphereCollider tmpSC;
+        Vector2 pointA;
+
+        //calculate local position and bounds
+        pointA.x = ( ( point.x / dWidth ) * dMSize.x );
+        pointA.y = ( ( point.y / dHeight ) * dMSize.z );
+
+        //create collider and add it to list
+        tmpGO = new GameObject( );
+        tmpSC = tmpGO.AddComponent<SphereCollider>( );
+
+        //define collider size and status
+        tmpSC.radius = radius;
+        tmpSC.isTrigger = trigger;
+
+        //position for x and y
+        tmpGO.transform.transform.position = new Vector3( pointA.x, transform.position.y, pointA.y );
+
+        //parent the GameObject
+        tmpGO.transform.SetParent( transform );
+
+        return tmpGO;
+
+    }
+
+
+    private List<GameObject> GenerateBoxColliderListOnPath
     (
         List<Vector2> points,
         int start,
         int end,
         int dWidth,
         int dHeight,
-        Vector2 dMSize,
+        Vector3 dMSize,
         float colliderHeight,
         float colliderWidth,
         bool trigger = true
     )
     {
-        List<BoxCollider> colliderList;
+        List<GameObject> colliderList;
+        GameObject tmpGO;
+        BoxCollider tmpBC;
         Vector2 pointA, pointB, pointC;
         int index;
 
-        colliderList = new List<BoxCollider>( );
+        float angle, dist;
+
+        colliderList = new List<GameObject>( );
 
         if( ( end - start < 1 ) && ( end - start >= 0 ) )
         {
-            //calculate local position and bounds
-            pointA.x = ( int ) ( ( points[0].x / dWidth ) * dMSize.x );
-            pointA.y = ( int ) ( ( points[0].y / dHeight ) * dMSize.y );
-
-            //create collider and add it to list
-            colliderList.Add( gameObject.AddComponent<BoxCollider>( ) );
-            colliderList[colliderList.Count - 1].size = new Vector3( colliderWidth, colliderHeight, colliderWidth );
-            colliderList[colliderList.Count - 1].center = new Vector3( pointA.x, 0, pointA.y );
-
-            colliderList[colliderList.Count - 1].isTrigger = trigger;
+            colliderList.Add( GenerateSphereAtPoint( points[ 0 ], dWidth, dHeight, dMSize, colliderWidth / 2.0f, trigger ) );
 
             return colliderList;
         }
 
         for( index = Mathf.Max( start, 0 ); index < Mathf.Min( end - 1, points.Count - 1 ); index++ )
         {
+
             //calculate local position and bounds for each set of points
-            pointA.x = ( int ) ( ( points[index].x / dWidth ) * dMSize.x );
-            pointA.y = ( int ) ( ( points[index].y / dHeight ) * dMSize.y );
+            pointA.x = ( ( points[index].x / dWidth ) * dMSize.x );
+            pointA.y = ( ( points[index].y / dHeight ) * dMSize.z );
 
-            pointB.x = ( int ) ( ( points[index + 1].x / dWidth ) * dMSize.x );
-            pointB.y = ( int ) ( ( points[index + 1].y / dHeight ) * dMSize.y );
+            pointB.x = ( ( points[index + 1].x / dWidth ) * dMSize.x );
+            pointB.y = ( ( points[index + 1].y / dHeight ) * dMSize.z );
 
-            pointC = MidPoint( pointA, pointB );
+            dist = Vector2.Distance( pointA, pointB );
 
-            //create collider and add it to list            
-            colliderList.Add( gameObject.AddComponent<BoxCollider>( ) );
-            colliderList[colliderList.Count - 1].size = new Vector3( colliderWidth, colliderHeight, colliderWidth );
-            colliderList[colliderList.Count - 1].center = new Vector3( pointC.x, 0, pointC.y );
+            if ( dist == 0 )
+            {
+                continue;
+            }            
+            
+            pointC = MidPoint( pointA, pointB );            
 
-            colliderList[colliderList.Count - 1].isTrigger = trigger;
+            //create collider and add it to list
+            tmpGO = new GameObject( );
+            tmpBC = tmpGO.AddComponent<BoxCollider>( );
+
+            //define collider size and status
+            tmpBC.size = new Vector3( colliderWidth, colliderHeight, dist + colliderWidth );
+            tmpBC.isTrigger = trigger;
+
+            //position for x and y
+            tmpGO.transform.transform.position = new Vector3( pointC.x, transform.position.y, pointC.y );
+
+            //rotate the game object
+            angle = Vector2.Angle( Vector2.up, ( pointB - pointA ).normalized );
+
+            angle *= Mathf.Sign( Vector2.Dot( Vector2.right, ( pointB - pointA ).normalized ) );
+
+            tmpGO.transform.Rotate( Vector3.up, angle );
+
+            //parent the GameObject
+            tmpGO.transform.SetParent( transform );
+
+            colliderList.Add( tmpGO );
         }
 
         return colliderList;
@@ -742,6 +815,16 @@ public class PathScript : MonoBehaviour
                 }
             }
         }
-    }   
+    }
+    
+    private void OnTriggerEnter( Collider other )
+    {
+        Debug.Log( "Entered " + other.name );
+    }
+
+    private void OnTriggerExit( Collider other )
+    {
+        Debug.Log( "Exited " + other.name );
+    }
 
 }
