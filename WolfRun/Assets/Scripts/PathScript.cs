@@ -47,6 +47,8 @@ public class PathScript : MonoBehaviour
 
     public Vector3 startWorld, endWorld;
 
+    public bool useMultiThreaded = true;
+
     private Vector2[ ] points2D;
 
    // public Vector3[ ] points3D;
@@ -141,7 +143,6 @@ public class PathScript : MonoBehaviour
         System.DateTime t1 =  System.DateTime.Now;
 
         List<Vector2> pointList;
-        List<Thread> threadList;
 
         int rValue, lastSelect, its = 0;
         float rChange;
@@ -260,38 +261,27 @@ public class PathScript : MonoBehaviour
 
         //initialize threads
 
-        threadList = new List<Thread>( );
-
         its = pointList.Count / ( SystemInfo.processorCount );
 
         its = its + ( pointList.Count - ( its * ( SystemInfo.processorCount ) ) );
 
-        for ( index = 0; index < SystemInfo.processorCount; index++ )
-        {
-            threadList.Add( new Thread( ( ) => RasterizeMaze( pointList, 
-                                                              its * index, 
-                                                              Mathf.Max( its * index + its, 
-                                                                         pointList.Count ),
-                                                              detailRes ) ) );        
-
-        }
 
         //perform the rasterization on the terrain
 
-        for ( index = 0; index < SystemInfo.processorCount; index++ )
+        if( its > 0 && useMultiThreaded )
         {
-            threadList[index].Start( );
+            MultiThreadedRasterization( pointList, detailRes, its );
+        }
+        else
+        {
+            RasterizeMaze( pointList, 0, pointList.Count, detailRes );
+            RasterizeEndPoint( start );
+            RasterizeEndPoint( end );
         }
 
-        RasterizeEndPoint( start );
-        RasterizeEndPoint( end );
+        
 
-        for ( index = 0; index < SystemInfo.processorCount; index++ )
-        {
-            threadList[index].Join( );
-        }
-
-        //place corn plants
+        //place far distance corn plants and trees
         trees = new List<TreeInstance>( );
 
         cornPosition = Vector3.zero;
@@ -350,9 +340,21 @@ public class PathScript : MonoBehaviour
             pointList.Add( points2D[index] ); //push back the point
         }
 
+        List<BoxCollider> boxColliderList = GenerateBoxColliderListOnPath( pointList, 0, pointList.Count, tData.detailWidth, tData.detailHeight, tData.size, 100, tolerance / 2.0f );
 
+        BoxCollider[ ] bCArray;
 
+        for( index = 0; index < boxColliderList.Count; index++ )
+        {
+            gameObject.AddComponent<BoxCollider>( );            
+        }
 
+        bCArray = gameObject.GetComponents<BoxCollider>( );
+
+        for ( index = 0; index < boxColliderList.Count; index++ )
+        {
+            bCArray[index] = boxColliderList[index];
+        }
 
         System.DateTime t2 = System.DateTime.Now;
 
@@ -413,7 +415,7 @@ public class PathScript : MonoBehaviour
         return nextPosition;
     }
 
-    public static List<BoxCollider> GenerateBoxColliderListOnPath
+    private List<BoxCollider> GenerateBoxColliderListOnPath
     (
         List<Vector2> points,
         int start,
@@ -422,31 +424,49 @@ public class PathScript : MonoBehaviour
         int dHeight,
         Vector2 dMSize,
         float colliderHeight,
-        float colliderWidth
+        float colliderWidth,
+        bool trigger = true
     )
     {
         List<BoxCollider> colliderList;
-        Vector2 A, B;
-        Bounds tmpBounds;
+        Vector2 pointA, pointB, pointC;
         int index;
 
         colliderList = new List<BoxCollider>( );
 
         if( ( end - start < 1 ) && ( end - start >= 0 ) )
         {
-            //calculate position and bounds
-            A.x = ( int ) ( ( points[0].x / dWidth ) * dMSize.x );
+            //calculate local position and bounds
+            pointA.x = ( int ) ( ( points[0].x / dWidth ) * dMSize.x );
+            pointA.y = ( int ) ( ( points[0].y / dHeight ) * dMSize.y );
 
-
-            colliderList.Add( new BoxCollider( ) );
-            tmpBounds = colliderList[colliderList.Count - 1].bounds;
+            //create collider and add it to list
+            colliderList.Add( gameObject.AddComponent<BoxCollider>( ) );
             colliderList[colliderList.Count - 1].size = new Vector3( colliderWidth, colliderHeight, colliderWidth );
+            colliderList[colliderList.Count - 1].center = new Vector3( pointA.x, 0, pointA.y );
+
+            colliderList[colliderList.Count - 1].isTrigger = trigger;
+
             return colliderList;
         }
 
         for( index = Mathf.Max( start, 0 ); index < Mathf.Min( end - 1, points.Count - 1 ); index++ )
         {
-            A.x = ( int ) ( ( points[ index ].x / dWidth ) * dMSize.x );
+            //calculate local position and bounds for each set of points
+            pointA.x = ( int ) ( ( points[index].x / dWidth ) * dMSize.x );
+            pointA.y = ( int ) ( ( points[index].y / dHeight ) * dMSize.y );
+
+            pointB.x = ( int ) ( ( points[index + 1].x / dWidth ) * dMSize.x );
+            pointB.y = ( int ) ( ( points[index + 1].y / dHeight ) * dMSize.y );
+
+            pointC = MidPoint( pointA, pointB );
+
+            //create collider and add it to list            
+            colliderList.Add( gameObject.AddComponent<BoxCollider>( ) );
+            colliderList[colliderList.Count - 1].size = new Vector3( colliderWidth, colliderHeight, colliderWidth );
+            colliderList[colliderList.Count - 1].center = new Vector3( pointC.x, 0, pointC.y );
+
+            colliderList[colliderList.Count - 1].isTrigger = trigger;
         }
 
         return colliderList;
@@ -598,6 +618,39 @@ public class PathScript : MonoBehaviour
         }
 
         return false;
+    }
+
+    private void MultiThreadedRasterization( List<Vector2> pointList, int detailRes, int its )
+    {
+        List<Thread> threadList;
+        int index;
+
+        //initialize threads
+        threadList = new List<Thread>( );   
+
+
+        //perform the rasterization on the terrain
+
+        for ( index = 0; index < SystemInfo.processorCount; index++ )
+        {
+            threadList.Add( new Thread( ( ) => RasterizeMaze( pointList,
+                                                              its * index,
+                                                              Mathf.Max( its * index + its,
+                                                                         pointList.Count ),
+                                                              detailRes ) ) );
+
+
+            threadList[index].Start( );
+
+        }
+
+        RasterizeEndPoint( start );
+        RasterizeEndPoint( end );
+
+        for ( index = 0; index < SystemInfo.processorCount; index++ )
+        {
+            threadList[index].Join( );
+        }
     }
 
 
