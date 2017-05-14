@@ -23,6 +23,9 @@ public class BoyController : MonoBehaviour
     private Animator bAnimator;
 
     private GrassManager grassManager;
+
+    private PathObject pathStatus;
+
     private Vector3 lastGoodPosition;
 
     private GameObject[ ] boySmell;
@@ -40,6 +43,8 @@ public class BoyController : MonoBehaviour
         lastGoodPosition = transform.position;
 
         grassManager = GetComponent<GrassManager>( );
+
+        pathStatus = GetComponent<PathObject>( );
 
         boySmell = GameObject.FindGameObjectsWithTag( "Scent" );
     }
@@ -74,23 +79,21 @@ public class BoyController : MonoBehaviour
             zeroCount++;
         }
 
+        //Deactivate Sense
+        if( grassManager.DeepInGrass( ) )
+        {
+            DeactivateSenseObjects( );
+        }
 
         //check for obstacles
-        if ( !canEnterGrass && grassManager.DeepInGrass( ) )
+        if ( !canEnterGrass && !pathStatus.OnPath( ) )
         {
-            transform.position = lastGoodPosition;
-
-            DeactivateSenseObjects( );
+            transform.position = lastGoodPosition;            
         }
-        else if( !canEnterGrass && grassManager.OnGrass())
+        else if ( canEnterGrass && !pathStatus.OnPath( ) )
         {
-            DeactivateSenseObjects();
-        }
-        else if ( canEnterGrass && grassManager.OnGrass( ) )
-        {
-            forwardMultiplier = Mathf.SmoothStep( priorFM, forwardMultiplier / 4.0f, 0.25f );
-
-            DeactivateSenseObjects( );
+            forwardMultiplier = Mathf.SmoothStep( priorFM, forwardMultiplier / 3.0f, 0.25f );
+            lastGoodPosition = transform.position;
         }
         else
         {

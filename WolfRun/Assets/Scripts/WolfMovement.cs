@@ -24,6 +24,8 @@ public class WolfMovement : MonoBehaviour
     public AudioClip howlSound;
     public AudioClip biteSound;
 
+    private PathObject pathStatus;
+
     private bool howlPlaying = false;
 
     private int zeroCount = 0;
@@ -39,7 +41,9 @@ public class WolfMovement : MonoBehaviour
         grassManager = GetComponent<GrassManager>( );
         gameManager = FindObjectOfType<GameManager>( );
         wAudio = GetComponent<AudioSource>( );
-	}
+
+        pathStatus = GetComponent<PathObject>( );
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -110,7 +114,7 @@ public class WolfMovement : MonoBehaviour
             {
                 forwardMultiplier /= 4.0f;
             }
-            else if ( grassManager.OnGrass( ) )
+            else if ( !pathStatus.OnPath( ) )
             {
                 forwardMultiplier = Mathf.SmoothStep( priorFM, forwardMultiplier / 2.0f, 0.25f );
             }

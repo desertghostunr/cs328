@@ -18,7 +18,7 @@ Features
 
 Fixes
 -----
-* Human collider improvment - Andy
+* Human collider improvment - Andy /
 * Wolf step sound too loud - Tyler
 * Hide Cursor when not in pause menu - Tyler or Andy
 * Change Howl to sound with all extended uses - Andy

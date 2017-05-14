@@ -62,6 +62,8 @@ public class PathScript : MonoBehaviour
     public int cornOffset = 10;
 
     public float cullProb = 0.8f;
+
+    private GameObject pathManager;
     
     void Start ()
     {
@@ -71,6 +73,14 @@ public class PathScript : MonoBehaviour
 
         GrassManager boyGrass = boy.GetComponent<GrassManager>( );
         GrassManager wolfGrass = wolf.GetComponent<GrassManager>( );
+
+        pathManager = GameObject.FindGameObjectWithTag( "PathManager" );
+
+        if( pathManager )
+        {
+            pathManager.transform.position = transform.position;
+            pathManager.transform.rotation = transform.rotation;
+        }
 
         terrain = GetComponent<Terrain>( );
 
@@ -452,6 +462,7 @@ public class PathScript : MonoBehaviour
 
         //create collider and add it to list
         tmpGO = new GameObject( );
+        tmpGO.name = trigger ? "p_trigger" : "p_collider";
         tmpSC = tmpGO.AddComponent<SphereCollider>( );
 
         //define collider size and status
@@ -462,7 +473,11 @@ public class PathScript : MonoBehaviour
         tmpGO.transform.transform.position = new Vector3( pointA.x, transform.position.y, pointA.y );
 
         //parent the GameObject
-        tmpGO.transform.SetParent( transform );
+        if( pathManager )
+        {
+            tmpGO.transform.SetParent( pathManager.transform );
+        }
+        
 
         return tmpGO;
 
@@ -520,6 +535,7 @@ public class PathScript : MonoBehaviour
 
             //create collider and add it to list
             tmpGO = new GameObject( );
+            tmpGO.name = trigger ? "p_trigger" : "p_collider";
             tmpBC = tmpGO.AddComponent<BoxCollider>( );
 
             //define collider size and status
@@ -537,7 +553,10 @@ public class PathScript : MonoBehaviour
             tmpGO.transform.Rotate( Vector3.up, angle );
 
             //parent the GameObject
-            tmpGO.transform.SetParent( transform );
+            if( pathManager )
+            {
+                tmpGO.transform.SetParent( pathManager.transform );
+            }            
 
             colliderList.Add( tmpGO );
         }
@@ -815,16 +834,7 @@ public class PathScript : MonoBehaviour
                 }
             }
         }
-    }
+    }  
     
-    private void OnTriggerEnter( Collider other )
-    {
-        Debug.Log( "Entered " + other.name );
-    }
-
-    private void OnTriggerExit( Collider other )
-    {
-        Debug.Log( "Exited " + other.name );
-    }
 
 }
