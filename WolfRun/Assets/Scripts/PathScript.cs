@@ -49,9 +49,9 @@ public class PathScript : MonoBehaviour
 
     public bool useMultiThreaded = true;
 
-    private Vector2[ ] points2D;
+    //private Vector2[ ] points2D;
 
-   // public Vector3[ ] points3D;
+    //public Vector3[ ] points3D;
 
     public GameObject boy;
 
@@ -68,8 +68,9 @@ public class PathScript : MonoBehaviour
     void Start ()
     {
         System.DateTime t1 =  System.DateTime.Now;
-        int its = 0;
+
         float x, y;
+        int [, ] tmpDetailMap;
 
         GrassManager boyGrass = boy.GetComponent<GrassManager>( );
         GrassManager wolfGrass = wolf.GetComponent<GrassManager>( );
@@ -84,15 +85,16 @@ public class PathScript : MonoBehaviour
 
         terrain = GetComponent<Terrain>( );
 
-        tData = terrain.terrainData;        
+        tData = terrain.terrainData;
 
-        if( !GeneratePath( ref its ) )
-        {
-            Debug.Log( "ERROR!" );
-        }
+        InitializePath( );
+
+        tmpDetailMap = ( int[ , ] ) detailMap.Clone( );
+
+        RandomCulling( ref tmpDetailMap, 0, cullProb );
 
         //set details
-        tData.SetDetailLayer( 0, 0, 0, detailMap );
+        tData.SetDetailLayer( 0, 0, 0, tmpDetailMap );
 
         if (wolfGrass)
         {
@@ -146,33 +148,16 @@ public class PathScript : MonoBehaviour
 
         Debug.Log( "Path Generation Time:" + " " + ( t2.Subtract( t1 ).TotalSeconds ) );
     }
-	
-	// Update is called once per frame
-	void Update ()
-    {
-        
-	}
 
-    bool GeneratePath( ref int iterationsRan )
+    List<Vector2> GeneratePath( )
     {
         List<Vector2> pointList;
 
-        int rValue, lastSelect, its = 0;
-        float rChange;
-
-        int currX, currY, index;
+        int rValue, lastSelect, its = 0;        
 
         int detailRes;
 
         Vector2 position, nextPosition;
-
-        TreeInstance cornPlant;
-        Vector3 cornPosition;
-
-        List<TreeInstance> trees;
-
-        int numTrees = 0;
-
 
         detailRes = tData.detailResolution;
 
@@ -190,24 +175,13 @@ public class PathScript : MonoBehaviour
             start.y = Mathf.Max( start.y, ( float ) 150 + tolerance );
         }
 
+        //points2D = new Vector2[ maxIterations ];
 
-        detailMap = new int[detailRes, detailRes];
-
-        
-        //initialize detail map
-        for( currY = 0; currY < detailRes; currY++ )
-        {
-            for( currX = 0; currX < detailRes; currX++ )
-            {
-                detailMap[currY, currX] = 3;           
-            }
-        }
-
-        points2D = new Vector2[ maxIterations ];
+        pointList = new List<Vector2>( );
 
         position = start;
 
-        points2D[ 0 ] = start;
+        pointList.Add( start );
         
 
         lastSelect = 9;
@@ -232,12 +206,12 @@ public class PathScript : MonoBehaviour
                  || nextPosition.y - tolerance < 150
                  || nextPosition.x - tolerance < 150 )
             {
-                nextPosition = points2D[its - 1]; //back track
+                nextPosition = pointList[its - 1]; //back track
             }
 
             lastSelect = rValue;
 
-            points2D[ its ] = ( nextPosition );
+            pointList.Add( nextPosition );
 
             position = nextPosition;
 
@@ -248,51 +222,67 @@ public class PathScript : MonoBehaviour
             }
         }
 
-        end = position;
+        end = position;              
 
-        iterationsRan = its + 1;
+        return pointList;
+    }
 
-        if( ( Vector2.Distance( start, end ) < startAndEndMinDist ) )
-        {
-            Debug.Log( "Dist: " + Vector2.Distance( start, end ) );
-            return false;
-        }
+    public void InitializePath( )
+    {
+        List<Vector2> pointList;
 
-        //generate list of points to rasterize
-        pointList = new List<Vector2>( );
+        //path generation
+        Fill2DArray( ref detailMap, tData.detailResolution, tData.detailResolution, 2 );
 
-        //copy points
-        for( index = 0; index < iterationsRan; index++ )
-        {
-            pointList.Add( points2D[index] ); //push back the point
-        }
+        pointList = GeneratePath();
 
-        //"rasterize" the line ///////////////////    
+        //perform the rasterization on the terrain
+
+        RasterizeLine( pointList, tData.detailResolution );
+
+        RasterizeEndPoint( start );
+        RasterizeEndPoint( end );
+
+        PlantTrees( );
+
+        // Add collider triggers around the path
+
+        AddCollidersToPath( pointList );
+    }
+
+    private void RasterizeLine( List<Vector2> pointList, int detailRes )
+    {
+        int its;
 
         InsertIntermediatePoints( ref pointList, tolerance / 2.0f );
-
-
-        //initialize threads
 
         its = pointList.Count / ( SystemInfo.processorCount );
 
         its = its + ( pointList.Count - ( its * ( SystemInfo.processorCount ) ) );
 
-
-        //perform the rasterization on the terrain
-
-        if( its > 0 && useMultiThreaded )
+        if ( its > 0 && useMultiThreaded )
         {
             MultiThreadedRasterization( pointList, detailRes, its );
         }
         else
         {
             RasterizeMaze( pointList, 0, pointList.Count, detailRes );
-            RasterizeEndPoint( start );
-            RasterizeEndPoint( end );
         }
+    }
 
-        
+    private void PlantTrees( )
+    {
+
+        float rChange;
+
+        int currX, currY;
+
+        TreeInstance cornPlant;
+        Vector3 cornPosition;
+
+        List<TreeInstance> trees;
+
+        int numTrees = 0, its;
 
         //place far distance corn plants and trees
         trees = new List<TreeInstance>( );
@@ -307,7 +297,7 @@ public class PathScript : MonoBehaviour
         {
             for ( currX = 50; currX < tData.size.x - 50; currX += cornOffset )
             {
-                cornPlant = new TreeInstance( );                
+                cornPlant = new TreeInstance( );
 
                 cornPlant.prototypeIndex = 0;
                 cornPlant.heightScale = 1;
@@ -320,7 +310,7 @@ public class PathScript : MonoBehaviour
                 cornPlant.position = cornPosition;
 
 
-                if ( detailMap[ ( int ) ( tData.detailHeight * cornPosition.z ), ( int ) ( tData.detailWidth * cornPosition.x ) ] == 0 )
+                if ( detailMap[( int ) ( tData.detailHeight * cornPosition.z ), ( int ) ( tData.detailWidth * cornPosition.x )] == 0 )
                 {
                     its++;
                     continue;
@@ -339,24 +329,10 @@ public class PathScript : MonoBehaviour
             }
         }
 
-        tData.treeInstances = trees.ToArray( ); 
+        tData.treeInstances = trees.ToArray( );
         terrain.Flush( );
         trees.Clear( );
-
-
-        // Add collider triggers around the path
-        pointList.Clear( );
-        pointList = new List<Vector2>( );
-
-        for ( index = 0; index < iterationsRan; index++ )
-        {
-            pointList.Add( points2D[index] ); //push back the point
-        }
-
-        AddCollidersToPath( pointList );        
-
-        return true;
-    }    
+    }
 
     static public Vector2 SelectNextPosition( int rValue, float rChange, Vector2 position )
     {
@@ -408,6 +384,26 @@ public class PathScript : MonoBehaviour
         }
 
         return nextPosition;
+    }
+
+    public void Fill2DArray<Type>( ref Type[,] array, int rSize, int cSize, Type value )
+    {
+        int x, y;
+
+        array = new Type[rSize, cSize];
+
+        for( y = 0; y < array.GetLength( 0 ); y++ )
+        {
+            for( x = 0; x < array.GetLength( 1 ); x++ )
+            {
+                array[y, x] = value;
+            }
+        }
+    }
+
+    public void InitializeAlphaMapToLayer( ref float[ , , ] alphaMap, int layer )
+    {
+
     }
 
     private void AddCollidersToPath( List<Vector2> pointList, bool trigger = true )
@@ -735,9 +731,6 @@ public class PathScript : MonoBehaviour
             threadList[index].Start( );
 
         }
-
-        RasterizeEndPoint( start );
-        RasterizeEndPoint( end );
 
         for ( index = 0; index < SystemInfo.processorCount; index++ )
         {
