@@ -50,9 +50,8 @@ public class BoyController : MonoBehaviour
     }
 	
 	// Update is called once per frame
-	void Update ()
+	void FixedUpdate ()
     {
-
         if( !AI )
         {
             Move( Input.GetAxis( "Vertical" ), Input.GetAxis( "Horizontal" ) );

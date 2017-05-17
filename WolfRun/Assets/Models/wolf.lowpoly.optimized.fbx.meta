@@ -154,12 +154,13 @@ ModelImporter:
     4300032: Cone.001
     4300034: Cone
     4300036: Cube
-    7400000: metarig|metarigAction
-    7400002: metarig|metarigAction.001
-    7400004: metarig|metarigAction.002
-    7400006: metarig|metarigAction.003
-    7400008: metarig|metarigAction.004
-    7400010: metarig|metarigAction.005
+    7400000: Walk
+    7400002: Run
+    7400004: Idle
+    7400006: Turn Left
+    7400008: Turn Right
+    7400010: Howl
+    7400012: Reverse
     9500000: //RootNode
     13700000: Cone
     13700002: Cone.001
@@ -204,7 +205,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     clipAnimations:
     - serializedVersion: 16
-      name: metarig|metarigAction
+      name: Walk
       takeName: metarig|metarigAction
       firstFrame: 0
       lastFrame: 14
@@ -358,7 +359,7 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: metarig|metarigAction.001
+      name: Run
       takeName: metarig|metarigAction.001
       firstFrame: 2.4
       lastFrame: 25.7
@@ -533,7 +534,7 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: metarig|metarigAction.002
+      name: Idle
       takeName: metarig|metarigAction.002
       firstFrame: 0
       lastFrame: 119
@@ -687,7 +688,7 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: metarig|metarigAction.003
+      name: Turn Left
       takeName: metarig|metarigAction.003
       firstFrame: 0
       lastFrame: 9
@@ -841,7 +842,7 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: metarig|metarigAction.004
+      name: Turn Right
       takeName: metarig|metarigAction.004
       firstFrame: 0
       lastFrame: 9
@@ -995,7 +996,7 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: metarig|metarigAction.005
+      name: Howl
       takeName: metarig|metarigAction.005
       firstFrame: 12
       lastFrame: 59
@@ -1050,6 +1051,158 @@ ModelImporter:
       - path: Cube.001
         weight: 1
       - path: Mesh
+        weight: 1
+      - path: metarig
+        weight: 1
+      - path: metarig/hips
+        weight: 1
+      - path: metarig/hips/hips.001
+        weight: 1
+      - path: metarig/hips/hips.001/hips.002
+        weight: 1
+      - path: metarig/hips/hips.001/hips.002/hips.003
+        weight: 1
+      - path: metarig/hips/hips.001/hips.002/hips.003/hips.004
+        weight: 1
+      - path: metarig/hips/hips.001/hips.002/hips.003/hips.004/hips.004_end
+        weight: 1
+      - path: metarig/hips/spine
+        weight: 1
+      - path: metarig/hips/spine/chest
+        weight: 1
+      - path: metarig/hips/spine/chest/neck
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head/le1
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head/le1/le2
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head/le1/le2/le2_end
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head/re1
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head/re1/re2
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head/re1/re2/re2_end
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head/uppermouth
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head/uppermouth/jaw
+        weight: 1
+      - path: metarig/hips/spine/chest/neck/neck2/head/uppermouth/jaw/jaw_end
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.L
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.L/upper_arm.L
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.L/upper_arm.L/forearm.L
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.L/upper_arm.L/forearm.L/hand.L
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.L/upper_arm.L/forearm.L/hand.L/hand.L_end
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.R
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.R/upper_arm.R
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.R/upper_arm.R/forearm.R
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.R/upper_arm.R/forearm.R/hand.R
+        weight: 1
+      - path: metarig/hips/spine/chest/shoulder.R/upper_arm.R/forearm.R/hand.R/hand.R_end
+        weight: 1
+      - path: metarig/hips/thigh.L
+        weight: 1
+      - path: metarig/hips/thigh.L/shin.L
+        weight: 1
+      - path: metarig/hips/thigh.L/shin.L/foot.L
+        weight: 1
+      - path: metarig/hips/thigh.L/shin.L/foot.L/toe.L
+        weight: 1
+      - path: metarig/hips/thigh.L/shin.L/foot.L/toe.L/toe.L_end
+        weight: 1
+      - path: metarig/hips/thigh.L/shin.L/shin.L.001
+        weight: 1
+      - path: metarig/hips/thigh.L/shin.L/shin.L.001/shin.L.001_end
+        weight: 1
+      - path: metarig/hips/thigh.R
+        weight: 1
+      - path: metarig/hips/thigh.R/shin.R
+        weight: 1
+      - path: metarig/hips/thigh.R/shin.R/foot.R
+        weight: 1
+      - path: metarig/hips/thigh.R/shin.R/foot.R/toe.R
+        weight: 1
+      - path: metarig/hips/thigh.R/shin.R/foot.R/toe.R/toe.R_end
+        weight: 1
+      - path: metarig/hips/thigh.R/shin.R/shin.R.001
+        weight: 1
+      - path: metarig/hips/thigh.R/shin.R/shin.R.001/shin.R.001_end
+        weight: 1
+      - path: Sphere
+        weight: 1
+      - path: Sphere.001
+        weight: 1
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Reverse
+      takeName: metarig|metarigAction
+      firstFrame: 0
+      lastFrame: 14
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Cone
+        weight: 1
+      - path: Cone.001
+        weight: 1
+      - path: Cone.002
+        weight: 1
+      - path: Cone.003
+        weight: 1
+      - path: Cone.004
+        weight: 1
+      - path: Cone.005
+        weight: 1
+      - path: Cone.006
+        weight: 1
+      - path: Cone.007
+        weight: 1
+      - path: Cone.008
+        weight: 1
+      - path: Cone.009
+        weight: 1
+      - path: Cone.010
+        weight: 1
+      - path: Cone.011
+        weight: 1
+      - path: Cube
+        weight: 1
+      - path: Cube.001
         weight: 1
       - path: metarig
         weight: 1

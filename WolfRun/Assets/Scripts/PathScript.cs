@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
+using UnityEngine.SceneManagement;
 
 public class PathScript : MonoBehaviour
 {
@@ -49,10 +50,6 @@ public class PathScript : MonoBehaviour
 
     public bool useMultiThreaded = true;
 
-    //private Vector2[ ] points2D;
-
-    //public Vector3[ ] points3D;
-
     public GameObject boy;
 
     public GameObject wolf;
@@ -63,6 +60,15 @@ public class PathScript : MonoBehaviour
 
     public float cullProb = 0.8f;
 
+    public int cornTreePrototypeIndex= 0;
+
+    public int shortGrassPrototypeIndex = 0;
+    public int cornGrassPrototypeIndex = 1;
+
+    public int pathExtremes = 150;
+
+    public int treeExtremes = 50;
+
     private GameObject pathManager;
     
     void Start ()
@@ -70,7 +76,6 @@ public class PathScript : MonoBehaviour
         System.DateTime t1 =  System.DateTime.Now;
 
         float x, y;
-        int [, ] tmpDetailMap;
 
         GrassManager boyGrass = boy.GetComponent<GrassManager>( );
         GrassManager wolfGrass = wolf.GetComponent<GrassManager>( );
@@ -87,14 +92,15 @@ public class PathScript : MonoBehaviour
 
         tData = terrain.terrainData;
 
-        InitializePath( );
+        Fill2DArray( ref detailMap, tData.detailResolution, tData.detailResolution, 2 );
 
-        tmpDetailMap = ( int[ , ] ) detailMap.Clone( );
-
-        RandomCulling( ref tmpDetailMap, 0, cullProb );
+        if( !InitializePath( ) )
+        {
+            SceneManager.LoadScene( "Menu" );
+        }
 
         //set details
-        tData.SetDetailLayer( 0, 0, 0, tmpDetailMap );
+        tData.SetDetailLayer( 0, 0, shortGrassPrototypeIndex, detailMap );
 
         if (wolfGrass)
         {
@@ -108,7 +114,7 @@ public class PathScript : MonoBehaviour
         ChangeResolution( ref detailMap, 1, 0 );
         RandomCulling( ref detailMap, 0, cullProb );
 
-        tData.SetDetailLayer( 0, 0, 1, detailMap );
+        tData.SetDetailLayer( 0, 0, cornGrassPrototypeIndex, detailMap );
 
         //slow down or stop players based on grass
 
@@ -126,12 +132,12 @@ public class PathScript : MonoBehaviour
         y = ((start.y / tData.detailHeight) * tData.size.z);
 
         //convert 2D points to world
-        startWorld = new Vector3(x, tData.GetHeight( (int) x, (int) y ), y );
+        startWorld = new Vector3(x, tData.GetInterpolatedHeight( x, y ), y );
 
         x = ((end.x / tData.detailWidth) * tData.size.x);
         y = ((end.y / tData.detailHeight) * tData.size.z);
 
-        endWorld = new Vector3(x, tData.GetHeight( (int) x, (int) y), y);
+        endWorld = new Vector3(x, tData.GetInterpolatedHeight( x, y), y);
 
         boy.transform.position = new Vector3( startWorld.x, boy.transform.position.y, startWorld.z );        
 
@@ -164,15 +170,15 @@ public class PathScript : MonoBehaviour
         start.x = Random.Range( xStartCenter - xRange, xStartCenter + xRange );
         start.y = Random.Range( yStartCenter - yRange, yStartCenter + yRange );
 
-        if ( start.y + tolerance > tData.detailResolution - 150
-             || start.x + tolerance > tData.detailResolution - 150
-             || start.y - tolerance < 150
-             || start.x - tolerance < 150 )
+        if ( start.y + tolerance > tData.detailResolution - pathExtremes
+             || start.x + tolerance > tData.detailResolution - pathExtremes
+             || start.y - tolerance < pathExtremes
+             || start.x - tolerance < pathExtremes )
         {
-            start.x = Mathf.Min( start.x, ( float ) detailRes - 150 - tolerance );
-            start.x = Mathf.Max( start.x, ( float ) 150 + tolerance );
-            start.y = Mathf.Min( start.y, ( float ) detailRes - 150 - tolerance );
-            start.y = Mathf.Max( start.y, ( float ) 150 + tolerance );
+            start.x = Mathf.Min( start.x, ( float ) detailRes - pathExtremes - tolerance );
+            start.x = Mathf.Max( start.x, pathExtremes + tolerance );
+            start.y = Mathf.Min( start.y, ( float ) detailRes - pathExtremes - tolerance );
+            start.y = Mathf.Max( start.y, pathExtremes + tolerance );
         }
 
         //points2D = new Vector2[ maxIterations ];
@@ -201,10 +207,10 @@ public class PathScript : MonoBehaviour
 
             nextPosition = SelectNextPosition( rValue, stepDist, position );            
 
-            if ( nextPosition.y + tolerance > detailRes - 150
-                 || nextPosition.x + tolerance > detailRes - 150
-                 || nextPosition.y - tolerance < 150
-                 || nextPosition.x - tolerance < 150 )
+            if ( nextPosition.y + tolerance > detailRes - pathExtremes
+                 || nextPosition.x + tolerance > detailRes - pathExtremes
+                 || nextPosition.y - tolerance < pathExtremes
+                 || nextPosition.x - tolerance < pathExtremes )
             {
                 nextPosition = pointList[its - 1]; //back track
             }
@@ -227,14 +233,17 @@ public class PathScript : MonoBehaviour
         return pointList;
     }
 
-    public void InitializePath( )
+    public bool InitializePath( )
     {
         List<Vector2> pointList;
 
         //path generation
-        Fill2DArray( ref detailMap, tData.detailResolution, tData.detailResolution, 2 );
-
         pointList = GeneratePath();
+
+        if( pointList.Count == 0 )
+        {
+            return false;
+        }
 
         //perform the rasterization on the terrain
 
@@ -246,8 +255,9 @@ public class PathScript : MonoBehaviour
         PlantTrees( );
 
         // Add collider triggers around the path
-
         AddCollidersToPath( pointList );
+
+        return true;
     }
 
     private void RasterizeLine( List<Vector2> pointList, int detailRes )
@@ -270,47 +280,54 @@ public class PathScript : MonoBehaviour
         }
     }
 
-    private void PlantTrees( )
+    private void PlantTrees( bool addCornPlants = true, bool cornPlantsExist = true )
     {
 
         float rChange;
 
         int currX, currY;
 
-        TreeInstance cornPlant;
-        Vector3 cornPosition;
+        TreeInstance tree;
+        Vector3 treePosition;
 
         List<TreeInstance> trees;
 
-        int numTrees = 0, its;
+        int numTrees = 0, its, numPrototypes;
 
         //place far distance corn plants and trees
         trees = new List<TreeInstance>( );
 
-        cornPosition = Vector3.zero;
+        treePosition = Vector3.zero;
 
         numTrees = 0;
 
+        numPrototypes = tData.treePrototypes.Length;
+
+        if( numPrototypes == 0 )
+        {
+            return;
+        }
+
         its = 0;
 
-        for ( currY = 50; currY < tData.size.z - 50; currY += cornOffset )
+        for ( currY = treeExtremes; currY < tData.size.z - treeExtremes; currY += cornOffset )
         {
-            for ( currX = 50; currX < tData.size.x - 50; currX += cornOffset )
+            for ( currX = treeExtremes; currX < tData.size.x - treeExtremes; currX += cornOffset )
             {
-                cornPlant = new TreeInstance( );
+                tree = new TreeInstance( );
 
-                cornPlant.prototypeIndex = 0;
-                cornPlant.heightScale = 1;
-                cornPlant.widthScale = 1;
+                tree.prototypeIndex = 0;
+                tree.heightScale = 1;
+                tree.widthScale = 1;                
 
-                cornPosition.x = ( 1.0f / tData.size.x ) * currX;
-                cornPosition.z = ( 1.0f / tData.size.z ) * currY;
-                cornPosition.y = tData.GetInterpolatedHeight( cornPosition.x, cornPosition.z );
+                treePosition.x = ( 1.0f / tData.size.x ) * currX;
+                treePosition.z = ( 1.0f / tData.size.z ) * currY;
+                treePosition.y = tData.GetInterpolatedHeight( treePosition.x, treePosition.z );
 
-                cornPlant.position = cornPosition;
+                tree.position = treePosition;
+                
 
-
-                if ( detailMap[( int ) ( tData.detailHeight * cornPosition.z ), ( int ) ( tData.detailWidth * cornPosition.x )] == 0 )
+                if ( detailMap[( int ) ( tData.detailHeight * treePosition.z ), ( int ) ( tData.detailWidth * treePosition.x )] == 0 )
                 {
                     its++;
                     continue;
@@ -320,17 +337,32 @@ public class PathScript : MonoBehaviour
 
                 if ( rChange < treeProb && numTrees < numberOfTrees )
                 {
-                    rChange = Random.Range( 0.0f, 1.0f );
+                    tree.prototypeIndex = Random.Range( 0, numPrototypes );
+
+                    if( cornPlantsExist && tree.prototypeIndex == cornTreePrototypeIndex )
+                    {
+                        tree.prototypeIndex = ( tree.prototypeIndex + 1 ) % numPrototypes; 
+                    }
+                    
                     numTrees++;
-                    cornPlant.prototypeIndex = rChange <= 0.5f ? 1 : 2;
                 }
 
-                trees.Add( cornPlant );
+                if( ( addCornPlants || cornPlantsExist ) 
+                    || ( !addCornPlants && tree.prototypeIndex != cornTreePrototypeIndex ) )
+                {
+                    trees.Add( tree );
+                }
+                else if( !cornPlantsExist )
+                {
+                    trees.Add( tree );
+                }
             }
         }
 
         tData.treeInstances = trees.ToArray( );
         terrain.Flush( );
+        terrain.GetComponent<TerrainCollider>( ).enabled = false;
+        terrain.GetComponent<TerrainCollider>( ).enabled = true;
         trees.Clear( );
     }
 
