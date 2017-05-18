@@ -287,6 +287,8 @@ public class PathScript : MonoBehaviour
 
         int currX, currY;
 
+        TerrainCollider tCollider = terrain.GetComponent<TerrainCollider>( );
+
         TreeInstance tree;
         Vector3 treePosition;
 
@@ -360,9 +362,12 @@ public class PathScript : MonoBehaviour
         }
 
         tData.treeInstances = trees.ToArray( );
+
         terrain.Flush( );
-        terrain.GetComponent<TerrainCollider>( ).enabled = false;
-        terrain.GetComponent<TerrainCollider>( ).enabled = true;
+
+        tCollider.enabled = false;
+        tCollider.enabled = true;
+
         trees.Clear( );
     }
 
