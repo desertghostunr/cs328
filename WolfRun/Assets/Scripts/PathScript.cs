@@ -65,16 +65,22 @@ public class PathScript : MonoBehaviour
     public int shortGrassPrototypeIndex = 0;
     public int cornGrassPrototypeIndex = 1;
 
+    public int grassTerrainTextureLayer = 1;
+
+    public int pathTerrainTextureLater = 0;
+
     public int pathExtremes = 150;
 
     public int treeExtremes = 50;
+
+    public bool plantCorn = true;
 
     private GameObject pathManager;
     
     void Start ()
     {
         System.DateTime t1 =  System.DateTime.Now;
-
+        float[,,] alphaMap = null;
         float x, y;
 
         GrassManager boyGrass = boy.GetComponent<GrassManager>( );
@@ -94,10 +100,18 @@ public class PathScript : MonoBehaviour
 
         Fill2DArray( ref detailMap, tData.detailResolution, tData.detailResolution, 2 );
 
+        InitializeAlphaMapToLayer( ref alphaMap, grassTerrainTextureLayer );
+
+        
+
         if( !InitializePath( ) )
         {
             SceneManager.LoadScene( "Menu" );
         }
+
+        PaintAlphaBasedOnDetails( ref alphaMap, pathTerrainTextureLater );
+
+        tData.SetAlphamaps( 0, 0, alphaMap );
 
         //set details
         tData.SetDetailLayer( 0, 0, shortGrassPrototypeIndex, detailMap );
@@ -155,7 +169,7 @@ public class PathScript : MonoBehaviour
         Debug.Log( "Path Generation Time:" + " " + ( t2.Subtract( t1 ).TotalSeconds ) );
     }
 
-    List<Vector2> GeneratePath( )
+    public List<Vector2> GeneratePath( )
     {
         List<Vector2> pointList;
 
@@ -247,12 +261,12 @@ public class PathScript : MonoBehaviour
 
         //perform the rasterization on the terrain
 
-        RasterizeLine( pointList, tData.detailResolution );
+        RasterizeList( pointList, tData.detailResolution );
 
         RasterizeEndPoint( start );
         RasterizeEndPoint( end );
 
-        PlantTrees( );
+        PlantTrees( plantCorn );
 
         // Add collider triggers around the path
         AddCollidersToPath( pointList );
@@ -260,7 +274,7 @@ public class PathScript : MonoBehaviour
         return true;
     }
 
-    private void RasterizeLine( List<Vector2> pointList, int detailRes )
+    private void RasterizeList( List<Vector2> pointList, int detailRes )
     {
         int its;
 
@@ -350,7 +364,7 @@ public class PathScript : MonoBehaviour
                 }
 
                 if( ( addCornPlants || cornPlantsExist ) 
-                    || ( !addCornPlants && tree.prototypeIndex != cornTreePrototypeIndex ) )
+                      && ( !addCornPlants && tree.prototypeIndex != cornTreePrototypeIndex ) )
                 {
                     trees.Add( tree );
                 }
@@ -438,9 +452,49 @@ public class PathScript : MonoBehaviour
         }
     }
 
-    public void InitializeAlphaMapToLayer( ref float[ , , ] alphaMap, int layer )
+    //textures the terrain with one layer
+    private void InitializeAlphaMapToLayer( ref float[ , , ] alphaMap, int layer )
     {
+        int x, y, inner;
 
+        alphaMap = tData.GetAlphamaps( 0, 0, tData.alphamapWidth, tData.alphamapHeight );
+
+        for( y = 0; y < alphaMap.GetLength( 0 ); y++ )
+        {
+            for( x = 0; x < alphaMap.GetLength( 1 ); x++ )
+            {
+                for( inner = 0; inner < alphaMap.GetLength( 2 ); inner++ )
+                {
+                    alphaMap[y, x, inner] = ( inner == layer ) ? 1 : 0;
+                }
+            }
+        }
+    }
+
+    private void PaintAlphaBasedOnDetails( ref float[ ,, ] alphaMap, int layer )
+    {
+        int aX, aY, dX, dY, inner;
+
+        for ( dY = 0; dY < detailMap.GetLength( 0 ); dY++ )
+        {
+            for ( dX = 0; dX < detailMap.GetLength( 1 ); dX++ )
+            {
+                if( detailMap[ dY, dX ] == 0 )
+                {
+
+                    aY = ( int ) (  ( ( float ) dY / tData.detailHeight ) * tData.alphamapHeight );
+                    aX = ( int ) (  ( ( float ) dX / tData.detailWidth ) * tData.alphamapWidth );
+
+                    for ( inner = 0; inner < alphaMap.GetLength( 2 ); inner++ )
+                    {
+                        alphaMap[aY, aX, inner] = ( inner == layer ) ? 1.0f : 0.0f;
+                    }
+                }
+
+                
+
+            }
+        }
     }
 
     private void AddCollidersToPath( List<Vector2> pointList, bool trigger = true )
