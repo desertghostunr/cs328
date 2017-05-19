@@ -74,8 +74,6 @@ public class PathScript : MonoBehaviour
     public int treeExtremes = 50;
 
     public bool plantCorn = true;
-
-    private GameObject pathManager;
     
     void Start ()
     {
@@ -85,14 +83,6 @@ public class PathScript : MonoBehaviour
 
         GrassManager boyGrass = boy.GetComponent<GrassManager>( );
         GrassManager wolfGrass = wolf.GetComponent<GrassManager>( );
-
-        pathManager = GameObject.FindGameObjectWithTag( "PathManager" );
-
-        if( pathManager )
-        {
-            pathManager.transform.position = transform.position;
-            pathManager.transform.rotation = transform.rotation;
-        }
 
         terrain = GetComponent<Terrain>( );
 
@@ -269,7 +259,7 @@ public class PathScript : MonoBehaviour
         PlantTrees( plantCorn );
 
         // Add collider triggers around the path
-        AddCollidersToPath( pointList );
+        //AddCollidersToPath( pointList );
 
         return true;
     }
@@ -497,7 +487,7 @@ public class PathScript : MonoBehaviour
         }
     }
 
-    private void AddCollidersToPath( List<Vector2> pointList, bool trigger = true )
+    /*private void AddCollidersToPath( List<Vector2> pointList, bool trigger = true )
     {
         GameObject startGO, endGO;
         List<GameObject> gOList;
@@ -527,9 +517,9 @@ public class PathScript : MonoBehaviour
                                                 terrain.SampleHeight( endGO.transform.position ),
                                                 endGO.transform.position.z );
 
-    }
+    }*/
 
-    private GameObject GenerateSphereAtPoint
+    /*private GameObject GenerateSphereAtPoint
     ( 
         Vector2 point, 
         int dWidth, 
@@ -568,10 +558,10 @@ public class PathScript : MonoBehaviour
 
         return tmpGO;
 
-    }
+    }*/
 
 
-    private List<GameObject> GenerateBoxColliderListOnPath
+    /*private List<GameObject> GenerateBoxColliderListOnPath
     (
         List<Vector2> points,
         int start,
@@ -649,7 +639,7 @@ public class PathScript : MonoBehaviour
         }
 
         return colliderList;
-    }
+    }*/
 
     public static void InsertIntermediatePoints( ref List<Vector2> list, float distanceBtwn )
     {

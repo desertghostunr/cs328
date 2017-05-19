@@ -37,6 +37,8 @@ public class UniversalCharacterController : MonoBehaviour
     private Animator m_animator;
 
     private CharacterController m_controller;
+
+    private bool m_moving = false;
     
 
     // Use this for initialization
@@ -54,6 +56,8 @@ public class UniversalCharacterController : MonoBehaviour
 		if( controlledByUser && m_canMove )
         {
             m_forwardAxis = Input.GetAxis( forwardMotionInput ) * m_movementInhibitor;
+
+            if( name == "Wolf" )Debug.Log( name + " " + m_forwardAxis );
 
             if( !turnWithMouse )
             {
@@ -82,6 +86,7 @@ public class UniversalCharacterController : MonoBehaviour
 
         if ( zeroCount > 0 && forward == 0 && turn == 0 && side == 0 )
         {
+            m_moving = false;
             zeroCount = 0;
             return;
         }
@@ -91,6 +96,7 @@ public class UniversalCharacterController : MonoBehaviour
         }
         else
         {
+            m_moving = true;
             zeroCount = 0;
         }
 
@@ -131,6 +137,11 @@ public class UniversalCharacterController : MonoBehaviour
     public void SetMovementInhibitor( float movementInhibitor )
     {
         m_movementInhibitor = movementInhibitor;
+    }
+
+    public bool Moving( )
+    {
+        return m_moving;
     }
     
 }
