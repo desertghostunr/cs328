@@ -57,8 +57,6 @@ public class UniversalCharacterController : MonoBehaviour
         {
             m_forwardAxis = Input.GetAxis( forwardMotionInput ) * m_movementInhibitor;
 
-            if( name == "Wolf" )Debug.Log( name + " " + m_forwardAxis );
-
             if( !turnWithMouse )
             {
                 m_turnAxis = Input.GetAxis( sideMotionInput );

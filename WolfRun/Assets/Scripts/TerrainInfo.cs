@@ -6,6 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(Terrain))]
 public class TerrainInfo : MonoBehaviour
 {
+
     private Terrain m_terrain;
     private int[,,] m_detailMap;
     private float[,,] m_textureMap;
@@ -206,22 +207,22 @@ public class TerrainInfo : MonoBehaviour
 
     public int GetDetailMapX( Vector3 position )
     {
-        return ( int ) ( m_terrain.terrainData.detailWidth * ( ( 1.0f / m_terrain.terrainData.size.x ) * position.x ) );
+        return ( int ) ( m_terrain.terrainData.detailWidth * ( ( 1.0f / m_terrain.terrainData.size.x ) * ( position.x - m_terrain.transform.position.x ) ) );
     }
 
     public int GetDetailMapY( Vector3 position )
     {
-        return ( int ) ( m_terrain.terrainData.detailHeight * ( ( 1.0f / m_terrain.terrainData.size.z ) * position.z ) );
+        return ( int ) ( m_terrain.terrainData.detailHeight * ( ( 1.0f / m_terrain.terrainData.size.z ) * ( position.z - m_terrain.transform.position.z ) ) );
     }
 
     public int GetAlphaMapX( Vector3 position )
     {
-        return ( int ) ( m_terrain.terrainData.alphamapWidth * ( ( 1.0f / m_terrain.terrainData.size.x ) * position.x ) );
+        return ( int ) ( m_terrain.terrainData.alphamapWidth * ( ( 1.0f / m_terrain.terrainData.size.x ) * ( position.x - m_terrain.transform.position.x ) ) );
     }
 
     public int GetAlphaMapY( Vector3 position )
     {
-        return ( int ) ( m_terrain.terrainData.alphamapHeight * ( ( 1.0f / m_terrain.terrainData.size.z ) * position.z ) );
+        return ( int ) ( m_terrain.terrainData.alphamapHeight * ( ( 1.0f / m_terrain.terrainData.size.z ) * ( position.z - m_terrain.transform.position.z ) ) );
     }
 
 }
