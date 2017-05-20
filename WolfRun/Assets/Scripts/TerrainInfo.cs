@@ -105,12 +105,12 @@ public class TerrainInfo : MonoBehaviour
         m_textureMap = alphaMap;
     }
 
-    public float getTerrainWeight( Vector3 position, float[] textureWeights, float[] detailWeights )
+    public float getTerrainWeight( Vector3 position, float[] textureWeights, float[] detailWeights, float steepnessWeight )
     {
         int x, y, index;
 
         float weightSum = 0.0f;
-        float maxWeight = m_detailMap.GetLength( 2 )  + m_textureMap.GetLength( 2 );
+        float maxWeight = m_detailMap.GetLength( 2 )  + m_textureMap.GetLength( 2 ) + 1;
         float tmpWeight;
 
         if( !m_terrain )
@@ -118,6 +118,8 @@ public class TerrainInfo : MonoBehaviour
             return 0;
         }
 
+
+        //detail weight
         x = GetDetailMapX( position );
         y = GetDetailMapY( position );
 
@@ -133,6 +135,8 @@ public class TerrainInfo : MonoBehaviour
             weightSum += detailWeights[index] * maxWeight * tmpWeight;
         }
 
+
+        //alpha weight
         x = GetAlphaMapX( position );
         y = GetAlphaMapY( position );
 
@@ -148,6 +152,9 @@ public class TerrainInfo : MonoBehaviour
             weightSum += textureWeights[index] * maxWeight * tmpWeight;
         }
 
+        //terrain steepness
+        weightSum += steepnessWeight * maxWeight * ( m_terrain.terrainData.GetSteepness( GetTerrainNormalizedX( position ), GetTerrainNormalizedZ( position ) ) / 90.0f );
+        
         return maxWeight == 0 ? 0 : 1.0f - Mathf.Min( 1.0f, Mathf.Max( weightSum / maxWeight, 0 ) );
     }
 
@@ -203,6 +210,16 @@ public class TerrainInfo : MonoBehaviour
         }
 
         return ( sum / counter );
+    }
+
+    public float GetTerrainNormalizedX( Vector3 position )
+    {
+        return ( position.x - m_terrain.transform.position.x ) / m_terrain.terrainData.size.x;
+    }
+
+    public float GetTerrainNormalizedZ( Vector3 position )
+    {
+        return ( position.z - m_terrain.transform.position.z ) / m_terrain.terrainData.size.z;
     }
 
     public int GetDetailMapX( Vector3 position )

@@ -8,6 +8,8 @@ public class TerrainMotionController : MonoBehaviour
     public float[] detailWeights;
     public float[] textureWeights;
 
+    public float steepnessWeight = 0.0f;
+
     public string terrainTag;
 
     private UniversalCharacterController m_universalCC = null;
@@ -35,7 +37,8 @@ public class TerrainMotionController : MonoBehaviour
 
         terrainWeight = m_terrainInformation.getTerrainWeight( transform.position, 
                                                                textureWeights, 
-                                                               detailWeights );        
+                                                               detailWeights, 
+                                                               steepnessWeight );        
 
         m_universalCC.SetMovementInhibitor( Mathf.Max( terrainWeight, 0.0f ) );
 	}
