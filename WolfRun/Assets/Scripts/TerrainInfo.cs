@@ -1,4 +1,9 @@
-﻿using System.Collections;
+﻿/******************************************************
+ * 
+ * Copy Right © Andrew Frost 2017, all rights reserved.
+ * 
+ ******************************************************/
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +15,7 @@ public class TerrainInfo : MonoBehaviour
     private Terrain m_terrain;
     private int[,,] m_detailMap;
     private float[,,] m_textureMap;
+    private float[,] m_steepnessMap;
 
     // Use this for initialization
     void Start ()
@@ -45,7 +51,10 @@ public class TerrainInfo : MonoBehaviour
                                                            m_terrain.terrainData.alphamapWidth, 
                                                            m_terrain.terrainData.alphamapHeight );
 
+        //build steepness map
+        m_steepnessMap = new float[(int)m_terrain.terrainData.size.x, (int)m_terrain.terrainData.size.z];
 
+        BuildSteepnessMap();
 	}
 
     public bool setDetailMap( List<int[,]> detailMapList, bool binary = true )
@@ -93,6 +102,38 @@ public class TerrainInfo : MonoBehaviour
         }
 
         return true;
+    }
+
+    public void BuildSteepnessMap( )
+    {
+        int x, y;
+
+        Vector3 position;
+
+        for( y = 0;  y < m_steepnessMap.GetLength( 0 ); y++ )
+        {
+            for( x = 0; x < m_steepnessMap.GetLength( 1 ); x++ )
+            {
+                position = new Vector3( x, 0, y );
+
+                m_steepnessMap[y, x] 
+                    = ( m_terrain.terrainData.GetSteepness( GetTerrainNormalizedX( position ),
+                                                            GetTerrainNormalizedZ( position ) ) / 90.0f );
+            }
+        }
+    }
+
+    public float GetSteepness( Vector3 position )
+    {
+        if( position.x < 0 
+            || position.z < 0 
+            || position.x >= m_steepnessMap.GetLength( 1 ) 
+            || position.z >= m_steepnessMap.GetLength( 0 ) )
+        {
+            return 0.0f;
+        }
+
+        return GetInterpolatedValue( m_steepnessMap, ( int ) position.x, ( int ) position.z );
     }
 
     public Type ConvertBinary<Type>( Type value, Type zero, Type one )
@@ -153,9 +194,14 @@ public class TerrainInfo : MonoBehaviour
         }
 
         //terrain steepness
-        weightSum += steepnessWeight * maxWeight * ( m_terrain.terrainData.GetSteepness( GetTerrainNormalizedX( position ), GetTerrainNormalizedZ( position ) ) / 90.0f );
+        weightSum += steepnessWeight * maxWeight * GetSteepness( position );
         
         return maxWeight == 0 ? 0 : 1.0f - Mathf.Min( 1.0f, Mathf.Max( weightSum / maxWeight, 0 ) );
+    }
+
+    public float GetHeight(Vector3 position )
+    {
+        return m_terrain.terrainData.GetInterpolatedHeight( position.x, position.z );
     }
 
     public float GetInterpolatedValue( float[,,] matrix, int x, int y, int layer)
@@ -178,6 +224,28 @@ public class TerrainInfo : MonoBehaviour
                   xIter++ )
             {
                 sum += matrix[yIter, xIter, layer];
+                counter++;
+            }
+        }
+
+        return ( sum / counter );
+    }
+
+    public float GetInterpolatedValue( float[ , ] matrix, int x, int y )
+    {
+        int xIter, yIter;
+        float sum = 0;
+        float counter = 0;
+
+        for ( yIter = Mathf.Max( y - 1, 0 );
+             yIter < Mathf.Min( y + 1, matrix.GetLength( 0 ) - 1 );
+             yIter++ )
+        {
+            for ( xIter = Mathf.Max( x - 1, 0 );
+                  xIter < Mathf.Min( x + 1, matrix.GetLength( 1 ) - 1 );
+                  xIter++ )
+            {
+                sum += matrix[yIter, xIter];
                 counter++;
             }
         }

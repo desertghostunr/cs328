@@ -1,4 +1,9 @@
-﻿using System.Collections;
+﻿/******************************************************
+ * 
+ * Copy Right © Andrew Frost 2017, all rights reserved.
+ * 
+ ******************************************************/
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
