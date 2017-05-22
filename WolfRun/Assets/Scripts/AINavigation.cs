@@ -125,12 +125,12 @@ public class AINavigation : MonoBehaviour
 
     public int GetNavMapX( Vector3 worldPosition )
     {
-        return ( int ) ( worldPosition.x - m_navMapOffsetPositon.x + ( mapDim / 2.0f ) );
+        return ( int ) ( Mathf.Floor( worldPosition.x - m_navMapOffsetPositon.x ) + ( mapDim / 2 ) );
     }
 
     public int GetNavMapY( Vector3 worldPosition )
     {
-        return ( int ) ( worldPosition.z - m_navMapOffsetPositon.z + ( mapDim / 2.0f ) );
+        return ( int ) ( Mathf.Floor( worldPosition.z - m_navMapOffsetPositon.z ) + ( mapDim / 2 ) );
     }
 
     public Vector3 GetWorldPositionFromNavMapCoords( int x, int y )
@@ -138,7 +138,7 @@ public class AINavigation : MonoBehaviour
         Vector3 position;
 
         position.x = x + m_navMapOffsetPositon.x - ( mapDim / 2.0f );
-        position.y = 0 + m_navMapOffsetPositon.y;
+        position.y = m_navMapOffsetPositon.y;
         position.z = y + m_navMapOffsetPositon.z - ( mapDim / 2.0f );
 
         return position;

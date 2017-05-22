@@ -164,7 +164,7 @@ public class TerrainInfo : MonoBehaviour
         x = GetDetailMapX( position );
         y = GetDetailMapY( position );
 
-        if( y >= m_detailMap.GetLength(0) || x >= m_detailMap.GetLength(1) )
+        if( y < 0 || x < 0 || y >= m_detailMap.GetLength(0) || x >= m_detailMap.GetLength(1) )
         {
             return 0;
         }
@@ -181,7 +181,7 @@ public class TerrainInfo : MonoBehaviour
         x = GetAlphaMapX( position );
         y = GetAlphaMapY( position );
 
-        if ( y >= m_textureMap.GetLength( 0 ) || x >= m_textureMap.GetLength( 1 ) )
+        if ( y < 0 || x < 0 || y >= m_textureMap.GetLength( 0 ) || x >= m_textureMap.GetLength( 1 ) )
         {
             return maxWeight == 0 ? 0 : 1.0f - Mathf.Min( 1.0f, Mathf.Max( weightSum / maxWeight, 0 ) );
         }
