@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class WolfSense : MonoBehaviour
 {
-    private Camera m_camera;
+    private Camera m_camera = null;
     private bool senseReady = true;
+    private bool senseOn = false;
 
     private GameObject[] smell;
     
@@ -26,7 +27,7 @@ public class WolfSense : MonoBehaviour
 
     public bool SenseOn( )
     {
-        return m_camera.gameObject.activeSelf;
+        return senseOn;
     }
 
     public void ActivateSense( )
@@ -42,7 +43,12 @@ public class WolfSense : MonoBehaviour
         int dIndex = 0;
         int index = 0;
 
-        m_camera.gameObject.SetActive( true );
+        if(m_camera )
+        {
+            m_camera.gameObject.SetActive( true );
+        }
+        senseOn = true;
+        
         senseReady = false;
 
         for( dIndex = 0; dIndex < 15; dIndex++ )
@@ -55,9 +61,12 @@ public class WolfSense : MonoBehaviour
             yield return new WaitForSeconds( 1.0f );
         }
 
-        
+        if ( m_camera )
+        {
+            m_camera.gameObject.SetActive( false );
+        }
 
-        m_camera.gameObject.SetActive( false );
+        senseOn = false;
 
         yield return new WaitForSeconds( 10.0f );
 

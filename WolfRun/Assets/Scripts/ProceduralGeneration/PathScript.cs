@@ -51,9 +51,9 @@ public class PathScript : MonoBehaviour
 
     public bool useMultiThreaded = true;
 
-    public GameObject boy;
+    private GameObject boy;
 
-    public GameObject wolf;
+    private GameObject wolf;
 
     public GameObject fire;
 
@@ -81,6 +81,9 @@ public class PathScript : MonoBehaviour
         System.DateTime t1 =  System.DateTime.Now;
         float[,,] alphaMap = null;
         float x, y;
+
+        boy = GameObject.Find( "Boy" );
+        wolf = GameObject.Find( "Wolf" );
 
         terrain = GetComponent<Terrain>( );
 
