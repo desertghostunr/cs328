@@ -37,12 +37,11 @@ public class PlayerCharacterController : UniversalCharacterController
                 //calculate rotate based on mouse
                 m_turnAxis = mouseSensitivity * Input.GetAxis( "Mouse X" );
 
-                m_sideAxis = Input.GetAxis( sideMotionInput );
+                m_sideAxis = Input.GetAxis( sideMotionInput ) * m_movementInhibitor;
             }
 
             Move( m_forwardAxis, m_turnAxis, m_sideAxis );
             Animate( m_forwardAxis, m_turnAxis, m_sideAxis );
-
         }
     }
 

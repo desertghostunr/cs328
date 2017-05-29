@@ -46,9 +46,16 @@ public class UniversalCharacterController : MonoBehaviour
         zeroCount = 0;
 	}
 
+    public virtual void Move( )
+    {
+        Debug.Log( name + " is using a virtual function: Move( ). "
+                    + "Calling this function does not move " + name + "." );
+    }
+
     public virtual void Move( float forward, float turn, float side )
     {
-
+        Debug.Log( name + " is using a virtual function: Move( float, float, float ). " 
+                    + "Calling this function does not move " + name + "." );
     }
 
     public void Animate( float forward, float turn, float side )

@@ -229,7 +229,9 @@ public class PathScript : MonoBehaviour
             }
         }
 
-        end = position;              
+        end = position;
+
+        pointList.Add( end );
 
         return pointList;
     }
@@ -256,7 +258,14 @@ public class PathScript : MonoBehaviour
 
         PlantTrees( plantCorn );
 
-        worldPath = ConvertPointListToWorldCoordinates( pointList );
+        if( huntedAI )
+        {
+            worldPath = ConvertPointListToWorldCoordinates( pointList );
+
+            FindObjectOfType<SimpleNPCHunted>( ).SetLocationList( worldPath );
+        }
+
+        
 
         return true;
     }
