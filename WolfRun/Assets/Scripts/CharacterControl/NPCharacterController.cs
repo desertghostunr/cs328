@@ -11,8 +11,9 @@ public class NPCharacterController : UniversalCharacterController
 	// Use this for initialization
 	protected override void Start ()
     {
-        m_agent = GetComponent<NavMeshAgent>( ); 
-        
+        m_agent = GetComponent<NavMeshAgent>( );
+        m_agent.speed = moveSpeed;
+        m_agent.angularSpeed = rotSpeed;
 
         base.Start( );
 	}
@@ -23,8 +24,13 @@ public class NPCharacterController : UniversalCharacterController
         if ( m_canMove )
         {
             Move( );
-            Animate( );           
         }
+        else
+        {
+            m_agent.velocity = Vector3.zero;
+        }
+        
+        Animate( );
 
         if ( !m_agent.isOnNavMesh )
         {
@@ -37,8 +43,16 @@ public class NPCharacterController : UniversalCharacterController
 
     public override void Move(  )
     {
-        m_agent.speed = moveSpeed * m_movementInhibitor;
-        m_agent.angularSpeed = rotSpeed;
+        m_agent.speed = m_movementInhibitor * moveSpeed;
+
+        if( m_agent.velocity.magnitude > 0 )
+        {
+            m_moving = true;
+        }
+        else
+        {
+            m_moving = false;
+        }
     }
 
     public void Animate( )

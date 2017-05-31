@@ -15,7 +15,12 @@ public class WolfSense : MonoBehaviour
         int index;
 
         m_camera = GetComponentInChildren<Camera>( );
-        m_camera.gameObject.SetActive( false );
+
+        if( m_camera )
+        {
+            m_camera.gameObject.SetActive( false );
+        }
+        
 
         smell = GameObject.FindGameObjectsWithTag( "Scent" );
 
@@ -67,6 +72,11 @@ public class WolfSense : MonoBehaviour
         }
 
         senseOn = false;
+
+        for ( index = 0; index < smell.Length; index++ )
+        {
+            smell[index].SetActive( false );
+        }
 
         yield return new WaitForSeconds( 10.0f );
 

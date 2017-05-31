@@ -6,6 +6,10 @@ using UnityEngine;
 [RequireComponent(typeof(NPCharacterController))]
 public class SimpleNPCHunted : SimpleNPCIntelligence
 {
+    public float fleeEnemyProbability = 0.8f;
+
+    public float fleeDistance = 5.0f;
+
     private List<Vector3> m_locList;
 
 	// Use this for initialization
@@ -17,7 +21,7 @@ public class SimpleNPCHunted : SimpleNPCIntelligence
 	// Update is called once per frame
 	void Update ()
     {
-        //planning
+        
 		if( !m_travelingToLoc )
         {
             m_travelingToLoc = PlanDestination( );            
@@ -34,12 +38,14 @@ public class SimpleNPCHunted : SimpleNPCIntelligence
     public override bool PlanDestination( )
     {
         int destIndex;
-        float correctDestProb = GetCorrectDestinationProbability( );
+        float correctDestProb; 
 
         if ( !m_NPC.IsActiveEnabledAndReady( ) )
         {
             return false;
         }
+
+        correctDestProb = GetCorrectDestinationProbability( );
 
         destIndex = Mathf.Max( 0, 
                                Mathf.Min( ( int ) ( correctDestProb * m_locList.Count ), 
@@ -65,6 +71,8 @@ public class SimpleNPCHunted : SimpleNPCIntelligence
                 m_destination = m_NPC.GetNearestLocationOnNavMesh( -1.0f * Random.Range(0.25f, fleeDistance) * transform.forward );
                 
                 m_travelingToLoc = m_NPC.SetDestination( m_destination );
+
+                break;
             }
         }
     }

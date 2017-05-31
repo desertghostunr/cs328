@@ -52,7 +52,7 @@ public class WolfHowl : MonoBehaviour
 
     public void ActivateAbility( )
     {
-        wAnimator.SetBool( abilityAnimationName, true );        
+        wAnimator.SetBool( abilityAnimationName, true );
     }
 
     public void ProcessAbility( )
@@ -60,8 +60,13 @@ public class WolfHowl : MonoBehaviour
         if ( wAnimator.GetBool( abilityAnimationName ) && wAnimator.GetCurrentAnimatorStateInfo( 0 ).IsName( abilityAnimationStateName ) )
         {
             wAnimator.SetBool( abilityAnimationName, false );
-            wAudio.clip = howlSound;
-            wAudio.Play( );
+
+            if( wAudio.clip != howlSound || !wAudio.isPlaying )
+            {
+                wAudio.clip = howlSound;
+                wAudio.Play( );
+            }
+
             abilityInUse = true;
         }
 
@@ -95,5 +100,11 @@ public class WolfHowl : MonoBehaviour
 
             m_universalCC.SetMovementInhibitor( localMovementInhibitor );
         }
+    }
+
+
+    public bool SenseOn( )
+    {
+        return senseController.SenseOn( );
     }
 }

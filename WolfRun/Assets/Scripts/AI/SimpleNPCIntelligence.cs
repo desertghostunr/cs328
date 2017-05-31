@@ -9,10 +9,6 @@ public class SimpleNPCIntelligence : MonoBehaviour
 
     public float enemySeenProbability = 0.25f;
 
-    public float fleeEnemyProbability = 0.8f;
-
-    public float fleeDistance = 5.0f;
-
     public float sightDistance = 10.0f;
 
     public float sightRefreshRate = 0.75f;

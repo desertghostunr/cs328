@@ -24,6 +24,8 @@ public class PlayerCharacterController : UniversalCharacterController
     {
         if ( m_canMove )
         {
+            m_isCrouched = canCrouch ? Input.GetButton( crouchMotionInput ) : false;
+
             m_forwardAxis = Input.GetAxis( forwardMotionInput ) * m_movementInhibitor;
 
             if ( !turnWithMouse )
@@ -41,8 +43,17 @@ public class PlayerCharacterController : UniversalCharacterController
             }
 
             Move( m_forwardAxis, m_turnAxis, m_sideAxis );
-            Animate( m_forwardAxis, m_turnAxis, m_sideAxis );
+
         }
+        else
+        {
+            m_forwardAxis = 0;
+            m_turnAxis = 0;
+            m_turnAxis = 0;
+        }
+
+
+        Animate( m_forwardAxis, m_turnAxis, m_sideAxis );
     }
 
     public override void Move( float forward, float turn, float side )
@@ -73,7 +84,15 @@ public class PlayerCharacterController : UniversalCharacterController
 
         transform.Rotate( 0, turn * rotSpeed * Time.deltaTime, 0 );
 
-        m_controller.SimpleMove( forwardDir * forward * moveSpeed * reverseMultiplier );
-        m_controller.SimpleMove( rightDir * side * sidestepMoveSpeed );
+        m_controller.SimpleMove( forwardDir 
+                                 * forward 
+                                 * moveSpeed 
+                                 * reverseMultiplier
+                                 * ( m_isCrouched ? crouchMovementInhibitor : 1.0f ) );
+
+        m_controller.SimpleMove( rightDir 
+                                 * side 
+                                 * sidestepMoveSpeed
+                                 * ( m_isCrouched ? crouchMovementInhibitor : 1.0f ) );
     }
 }

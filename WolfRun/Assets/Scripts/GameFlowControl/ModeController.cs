@@ -18,8 +18,7 @@ public class ModeController : MonoBehaviour
     }
 
     public int mode = 0;
-
-
+    
     public GameObject boyPrefab = null;
     public GameObject wolfPrefab = null;
     public GameObject boyHSPrefab = null;
@@ -42,10 +41,10 @@ public class ModeController : MonoBehaviour
     {
         GameObject hunter, hunted;
 
-        if ( mode == ( int ) MODE.none || mode == ( int ) MODE.all )
+        /*if ( mode == ( int ) MODE.none || mode == ( int ) MODE.all )
         {
             mode = ( int ) MODE.hotseat;
-        }
+        }*/
 
         pathCreator = FindObjectOfType<PathScript>( );
 
