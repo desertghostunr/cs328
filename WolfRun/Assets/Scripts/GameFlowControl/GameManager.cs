@@ -14,6 +14,9 @@ public class GameManager : MonoBehaviour
     private GameObject pausePanel;
     private GameObject defaultScreen;
     private GameObject instructionScreen;
+    private RotateCameraMouse mouseRotationScript;
+
+    private AudioSource [] audioSources;
 
     private GameObject victoryText;
     private string winner;
@@ -26,6 +29,11 @@ public class GameManager : MonoBehaviour
         pausePanel = GameObject.Find("Pause Panel");
         defaultScreen = GameObject.Find("Default");
         instructionScreen = GameObject.Find("Instructions");
+
+        mouseRotationScript = FindObjectOfType<RotateCameraMouse>( );
+
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
 
         // Order of disable important
         defaultScreen.SetActive(false);
@@ -52,12 +60,30 @@ public class GameManager : MonoBehaviour
 
     public void TogglePauseState()
     {
+        int index;
+
+        audioSources = FindObjectsOfType<AudioSource>( );
+
+        if( mouseRotationScript )
+        {
+            mouseRotationScript.enabled = !( mouseRotationScript.enabled );
+        }
+        
+
         if (isPaused)
         {
             // Unpause game
             Time.timeScale = 1;
             pausePanel.SetActive(false);
             isPaused = false;
+
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+
+            for( index = 0; index < audioSources.Length; index++ )
+            {
+                audioSources[index].UnPause( );
+            }
         }
         else
         {
@@ -67,6 +93,14 @@ public class GameManager : MonoBehaviour
             instructionScreen.SetActive(false);
             defaultScreen.SetActive(true);
             isPaused = true;
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+
+            for ( index = 0; index < audioSources.Length; index++ )
+            {
+                audioSources[index].Pause( );
+            }
         }
     }
 

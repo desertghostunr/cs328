@@ -74,14 +74,15 @@ public class UniversalCharacterController : MonoBehaviour
 
         if ( forward >= 0.00f )
         {
-            move = forward * Vector3.forward + ( turn + side * sidestepAnimationMultiplier ) * Vector3.right;
+            move = forward * Vector3.forward + ( turn + ( side * sidestepAnimationMultiplier ) ) * Vector3.right;
         }
         else
         {
-            move = forward * Vector3.back + ( turn + side * sidestepAnimationMultiplier ) * Vector3.right;
+            move = forward * Vector3.back + ( turn + ( side * sidestepAnimationMultiplier ) ) * Vector3.right;
         }
 
         animatorTurnValue = Mathf.Atan2( move.x, move.z );
+
 
         m_animator.SetFloat( forwardAnimationName, forward, animationDampTime, Time.deltaTime );
         m_animator.SetFloat( turnAnimationName, animatorTurnValue, animationDampTime, Time.deltaTime ); 

@@ -27,7 +27,7 @@ public class RotateCameraMouse : MonoBehaviour
 
         m_targetRot = ClampRotationAroundXAxis( m_targetRot );
 
-        m_camera.transform.localRotation = m_targetRot;
+        m_camera.transform.localRotation = m_targetRot;        
     }
 
     //from MouseLook.cs

@@ -18,6 +18,7 @@ public class ModeController : MonoBehaviour
     }
 
     public int mode = 0;
+    public float aiIntelligence = 0.0f;
     
     public GameObject boyPrefab = null;
     public GameObject wolfPrefab = null;
@@ -40,6 +41,8 @@ public class ModeController : MonoBehaviour
     void Start( )
     {
         GameObject hunter, hunted;
+
+        SimpleNPCIntelligence ai;
 
         /*if ( mode == ( int ) MODE.none || mode == ( int ) MODE.all )
         {
@@ -94,6 +97,21 @@ public class ModeController : MonoBehaviour
         hunted.SetActive( true );
         hunter.SetActive( false );
         hunter.SetActive( true );
+
+        //set ai difficultly
+        ai = hunted.GetComponent<SimpleNPCIntelligence>( );
+        
+        if( ai )
+        {
+            ai.intelligence = aiIntelligence;
+        }
+
+        ai = hunter.GetComponent<SimpleNPCIntelligence>( );
+
+        if ( ai )
+        {
+            ai.intelligence = aiIntelligence;
+        }
 
         //remove prefabs as they are no longer needed
         boyPrefab = null;

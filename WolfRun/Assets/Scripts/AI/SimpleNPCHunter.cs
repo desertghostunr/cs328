@@ -54,6 +54,7 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
     {
 
         float useAbilityProb;
+        float pointOffset;
         Vector3 pointToGoTo;
 
         if ( !m_NPC.IsActiveEnabledAndReady( ) )
@@ -70,9 +71,11 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
         }
         else
         {
-            pointToGoTo = transform.position + new Vector3( Random.Range( 1, searchRange * intelligence ), 
+            pointOffset = searchRange * intelligence;
+
+            pointToGoTo = transform.position + new Vector3( Random.Range( -pointOffset, pointOffset ), 
                                                             0, 
-                                                            Random.Range( 1, searchRange * intelligence ) );
+                                                            Random.Range( -pointOffset, pointOffset ) );
 
             m_destination = m_NPC.GetNearestLocationOnNavMesh( pointToGoTo );
             m_NPC.SetDestination( m_destination );

@@ -37,8 +37,7 @@ public class PlayerCharacterController : UniversalCharacterController
             else
             {
                 //calculate rotate based on mouse
-                m_turnAxis = mouseSensitivity * Input.GetAxis( "Mouse X" );
-
+                m_turnAxis = Input.GetAxis( "Mouse X" );
                 m_sideAxis = Input.GetAxis( sideMotionInput ) * m_movementInhibitor;
             }
 
@@ -61,6 +60,8 @@ public class PlayerCharacterController : UniversalCharacterController
         Vector3 forwardDir, rightDir;
         float reverseMultiplier;
 
+        float mouseMultiplier;
+
         if ( zeroCount > 0 && forward == 0 && turn == 0 && side == 0 )
         {
             m_moving = false;
@@ -78,11 +79,17 @@ public class PlayerCharacterController : UniversalCharacterController
         }
 
         reverseMultiplier = forward < 0 ? reverseSpeedInhibitor : 1.0f;
+        mouseMultiplier = turnWithMouse ? mouseSensitivity : 1.0f;
 
         forwardDir = transform.TransformDirection( Vector3.forward );
         rightDir = transform.TransformDirection( Vector3.right );
 
-        transform.Rotate( 0, turn * rotSpeed * Time.deltaTime, 0 );
+        transform.Rotate( 0, 
+                          turn 
+                          * mouseSensitivity 
+                          * rotSpeed 
+                          * Time.deltaTime, 
+                          0 );
 
         m_controller.SimpleMove( forwardDir 
                                  * forward 
