@@ -13,6 +13,8 @@ public class SettingsSingleton : MonoBehaviour
     public static readonly string tMaxMeshTreesStr = "tMaxMeshTrees";
     public static readonly string aiIntelligenceStr = "aiIntelligence";
 
+
+
     public int mode = 0;
     public float aiIntelligence = 0;
 
@@ -37,7 +39,7 @@ public class SettingsSingleton : MonoBehaviour
 
             DontDestroyOnLoad( gameObject );
 
-            LoadSettingsFromDisk( );
+            LoadSettings( );
         }
     }
 
@@ -46,7 +48,7 @@ public class SettingsSingleton : MonoBehaviour
         return m_singleton;
     }
 
-    public void LoadSettingsFromDisk( )
+    public void LoadSettings( )
     {
         aiIntelligence = PlayerPrefs.GetFloat( aiIntelligenceStr, aiIntelligence );
 

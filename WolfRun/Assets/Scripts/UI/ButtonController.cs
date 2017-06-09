@@ -35,6 +35,11 @@ public class ButtonController : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     private void SetBloodEffect(bool shouldSet)
     {
+        if( !childText )
+        {
+            return;
+        }
+
         childText.text = shouldSet ? threatText : defaultText;
         childText.color = shouldSet ? threatColor : defaultColor;
     }

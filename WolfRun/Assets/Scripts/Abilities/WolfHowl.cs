@@ -63,6 +63,7 @@ public class WolfHowl : MonoBehaviour
 
             if( wAudio.clip != howlSound || !wAudio.isPlaying )
             {
+                wAudio.volume = 1;
                 wAudio.clip = howlSound;
                 wAudio.Play( );
             }

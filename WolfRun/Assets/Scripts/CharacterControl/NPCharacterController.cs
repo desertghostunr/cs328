@@ -24,6 +24,7 @@ public class NPCharacterController : UniversalCharacterController
         if ( m_canMove )
         {
             Move( );
+            m_movementInhibitor = 1.0f;
         }
         else
         {
@@ -44,6 +45,7 @@ public class NPCharacterController : UniversalCharacterController
     public override void Move(  )
     {
         m_agent.speed = m_movementInhibitor * moveSpeed;
+        m_agent.angularSpeed = m_movementInhibitor * rotSpeed;
 
         if( m_agent.velocity.magnitude > 0 )
         {

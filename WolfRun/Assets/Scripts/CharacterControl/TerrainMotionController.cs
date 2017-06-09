@@ -22,6 +22,8 @@ public class TerrainMotionController : MonoBehaviour
 
     private GameObject m_currentTerrainGO = null;
 
+    private float m_currentWeight = 1.0f;
+
 	// Use this for initialization
 	void Start ()
     {
@@ -30,22 +32,21 @@ public class TerrainMotionController : MonoBehaviour
         m_terrainInformation = FindObjectOfType<TerrainInfo>( );
 	}
 	
-	// Update is called once per frame
-	void Update ()
+	
+	void Update ( )
     {
-        float terrainWeight;
 
 		if( !m_terrainInformation || !m_universalCC.Moving( ) )
         {
             return;
         }
 
-        terrainWeight = m_terrainInformation.getTerrainWeight( transform.position, 
-                                                               textureWeights, 
-                                                               detailWeights, 
-                                                               steepnessWeight );        
+        m_currentWeight = m_terrainInformation.getTerrainWeight( transform.position, 
+                                                                 textureWeights, 
+                                                                 detailWeights, 
+                                                                 steepnessWeight );        
 
-        m_universalCC.SetMovementInhibitor( Mathf.Max( 1.0f - terrainWeight, 0.0f ) );
+        m_universalCC.SetMovementInhibitor( Mathf.Max( 1.0f - m_currentWeight, 0.0f ) );
 	}
 
     private void OnCollisionEnter( Collision collision )

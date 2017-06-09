@@ -23,6 +23,7 @@ public class WolfVictory : MonoBehaviour
         {
             gameManager.ToggleBlackScreen( );
 
+            wAudio.volume = 1.0f;
             wAudio.clip = biteSound;
             wAudio.Play( );
 
