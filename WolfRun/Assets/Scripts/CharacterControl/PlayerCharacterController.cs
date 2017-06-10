@@ -12,15 +12,22 @@ public class PlayerCharacterController : UniversalCharacterController
 {
     public string forwardMotionInput;
     public string sideMotionInput;
+    public string runMotionInput = "Sprint";
     public string crouchMotionInput = "Crouch";
     public string jumpMotionInput = "Jump";
 
     public bool turnWithMouse = false;
     public float mouseSensitivity = 2.0f;
 
+    public bool toggleCrouch = false;
+
     protected CharacterController m_controller;
 
     protected bool m_jump = false;
+
+    protected float m_walkSpeedInhibitor;
+
+    protected bool m_crouchLock = false;
 
     // Use this for initialization
     protected override void Start ()
@@ -57,10 +64,32 @@ public class PlayerCharacterController : UniversalCharacterController
         m_movementInhibitor = 1.0f;
     }
 
+    //call in update
     public void ProcessInput( )
     {
+        //walking speed
+        m_walkSpeedInhibitor = Input.GetButton( runMotionInput ) ? 1.0f : walkSpeedInhibitor;
+
         //crouching
-        m_isCrouched = canCrouch ? Input.GetButton( crouchMotionInput ) : false;
+        if( canCrouch )
+        {
+            if ( !toggleCrouch )
+            {
+                m_isCrouched = Input.GetButton( crouchMotionInput );
+            }
+            else //handle toggle input
+            {
+                if( Input.GetButtonDown( crouchMotionInput ) )
+                {
+                    m_isCrouched = !m_isCrouched;
+                }
+            }
+        }
+        else
+        {
+            m_isCrouched = false;
+        }       
+        
 
         //jumping
         m_jump = canJump ? ( !m_isJumping && Input.GetButton( jumpMotionInput ) ) : false;
@@ -71,11 +100,11 @@ public class PlayerCharacterController : UniversalCharacterController
         }
 
         //movement
-        m_forwardAxis = Input.GetAxis( forwardMotionInput ) * m_movementInhibitor;
+        m_forwardAxis = Input.GetAxis( forwardMotionInput ) * m_movementInhibitor * m_walkSpeedInhibitor;
 
         if ( !turnWithMouse )
         {
-            m_turnAxis = Input.GetAxis( sideMotionInput ) * m_movementInhibitor;
+            m_turnAxis = Input.GetAxis( sideMotionInput ) * m_walkSpeedInhibitor;
 
             m_sideAxis = 0;
         }
@@ -83,7 +112,7 @@ public class PlayerCharacterController : UniversalCharacterController
         {
             //calculate rotate based on mouse
             m_turnAxis = Input.GetAxis( "Mouse X" );
-            m_sideAxis = Input.GetAxis( sideMotionInput ) * m_movementInhibitor;
+            m_sideAxis = Input.GetAxis( sideMotionInput ) * m_movementInhibitor * m_walkSpeedInhibitor;
         }
     }
 

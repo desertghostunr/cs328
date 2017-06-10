@@ -25,6 +25,8 @@ public class UniversalCharacterController : MonoBehaviour
     public bool canCrouch = true;
     public float crouchMovementInhibitor = 0.25f;
 
+    public float walkSpeedInhibitor = 1.0f;
+
     public bool canJump = true;
     public float jumpSpeed = 5.0f;
 
@@ -103,16 +105,14 @@ public class UniversalCharacterController : MonoBehaviour
 
         }
 
-        m_animator.SetFloat( forwardAnimationName, forward, animationDampTime, Time.deltaTime );
-        m_animator.SetFloat( turnAnimationName, GetAnimationTurnValue( forward, turn, side ), animationDampTime, Time.deltaTime ); 
-        
-        if( canCrouch )
+        if ( canCrouch )
         {
             m_animator.SetBool( crouchAnimationName, m_isCrouched );
         }
 
-        
-        
+        m_animator.SetFloat( forwardAnimationName, forward, animationDampTime, Time.deltaTime );
+        m_animator.SetFloat( turnAnimationName, GetAnimationTurnValue( forward, turn, side ), animationDampTime, Time.deltaTime ); 
+                
     }
 
     public void SetCanMove( bool canMove )

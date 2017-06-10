@@ -19,6 +19,8 @@ public class ModeController : MonoBehaviour
 
     public int mode = 0;
     public float aiIntelligence = 0.0f;
+
+    public float mouseSensitivity = 2.0f;
     
     public GameObject boyPrefab = null;
     public GameObject wolfPrefab = null;
@@ -44,10 +46,8 @@ public class ModeController : MonoBehaviour
 
         SimpleNPCIntelligence ai;
 
-        /*if ( mode == ( int ) MODE.none || mode == ( int ) MODE.all )
-        {
-            mode = ( int ) MODE.hotseat;
-        }*/
+        PlayerCharacterController playerCC;
+        RotateCameraMouse rotateCamera;
 
         pathCreator = FindObjectOfType<PathScript>( );
 
@@ -112,6 +112,34 @@ public class ModeController : MonoBehaviour
         {
             ai.intelligence = aiIntelligence;
         }
+
+        //set mouse sensitivity
+        playerCC = hunted.GetComponent<PlayerCharacterController>( );
+        rotateCamera = hunted.GetComponentInChildren<RotateCameraMouse>( );
+
+        if( playerCC )
+        {
+            playerCC.mouseSensitivity = mouseSensitivity;
+        }
+
+        if( rotateCamera )
+        {
+            rotateCamera.sensitivity = mouseSensitivity;
+        }
+
+        playerCC = hunter.GetComponent<PlayerCharacterController>( );
+        rotateCamera = hunter.GetComponentInChildren<RotateCameraMouse>( );
+
+        if ( playerCC )
+        {
+            playerCC.mouseSensitivity = mouseSensitivity;
+        }
+
+        if ( rotateCamera )
+        {
+            rotateCamera.sensitivity = mouseSensitivity;
+        }
+
 
         //remove prefabs as they are no longer needed
         boyPrefab = null;

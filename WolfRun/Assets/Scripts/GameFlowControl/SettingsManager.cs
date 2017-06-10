@@ -12,6 +12,10 @@ public class SettingsManager : MonoBehaviour
 
     public static readonly float VOLUME = 1.0f;
 
+    public static readonly float MOUSE_SENSITIVITY = 2.0f;
+
+    public static readonly string QUALITY_PRESET_DEFAULT = "Good";
+
     public static readonly float T_DETAIL_DISTANCE = 140.0f;
     public static readonly float T_DETAIL_DENSITY = 1.0f;
     public static readonly float T_TREE_DISTANCE = 1000.0f;
@@ -23,6 +27,8 @@ public class SettingsManager : MonoBehaviour
     public static readonly string AI_INTELLIGENCE_STR = "aiIntelligence";
 
     public static readonly string VOLUME_STR = "volume-level";
+
+    public static readonly string MOUSE_SENSIVITY_STR = "mouse-sensitivity";
 
     public static readonly string QUALITY_PRESET_STR = "quality-preset";
     public static readonly string TEXTURE_QUALITY_STR = "master-texture-quality";
@@ -75,6 +81,7 @@ public class SettingsManager : MonoBehaviour
         {
             modeControl.mode = PlayerPrefs.GetInt( MODE_STR, MODE );
             modeControl.aiIntelligence = PlayerPrefs.GetFloat( AI_INTELLIGENCE_STR, AI_INTELLIGENCE );
+            modeControl.mouseSensitivity = PlayerPrefs.GetFloat( MOUSE_SENSIVITY_STR, MOUSE_SENSITIVITY );
         }
 
         for ( index = 0; index < terrains.Length; index++ )
@@ -94,7 +101,7 @@ public class SettingsManager : MonoBehaviour
 
         AudioListener.volume = PlayerPrefs.GetFloat( VOLUME_STR, VOLUME );
 
-        SetQualityPreset( PlayerPrefs.GetString( QUALITY_PRESET_STR, "Custom" ) );
+        SetQualityPreset( PlayerPrefs.GetString( QUALITY_PRESET_STR, QUALITY_PRESET_DEFAULT ) );
 
         SetToSelectedPreset( );
     }
@@ -141,6 +148,31 @@ public class SettingsManager : MonoBehaviour
     {
         SetPlayerPrefs( difficulty, AI_INTELLIGENCE_STR, AI_INTELLIGENCE );
     }
+
+    // mouse sensitivity
+    public void SetMouseSensivity( float sensitivity )
+    {
+        PlayerCharacterController playerCC;
+
+        RotateCameraMouse rotateCamera;
+
+        SetPlayerPrefs( sensitivity, MOUSE_SENSIVITY_STR, MOUSE_SENSITIVITY );
+
+        playerCC = FindObjectOfType<PlayerCharacterController>( );
+
+        rotateCamera = FindObjectOfType<RotateCameraMouse>( );
+
+        if ( playerCC )
+        {
+            playerCC.mouseSensitivity = PlayerPrefs.GetFloat( MOUSE_SENSIVITY_STR, MOUSE_SENSITIVITY );
+        }
+
+        if ( rotateCamera )
+        {
+            rotateCamera.sensitivity = PlayerPrefs.GetFloat( MOUSE_SENSIVITY_STR, MOUSE_SENSITIVITY );
+        }
+    }
+
 
     // audio
     public void SetVolume( float volume )
@@ -495,7 +527,28 @@ public class SettingsManager : MonoBehaviour
         }       
 
         m_requiresSave = false;
-    }    
+    }
+
+    public void ResetAll( )
+    {
+        //quality
+        SetQualityPreset( QUALITY_PRESET_DEFAULT );
+        SetToSelectedPreset( );
+
+        //terrain
+        SetTerrainBillboardStart( T_BILLBOARD_START );
+        SetTerrainDetailDensity( T_DETAIL_DENSITY );
+        SetTerrainDetailDistance( T_DETAIL_DISTANCE );
+        SetTerrainFadeLength( T_FADE_LENGTH );
+        SetTerrainMaxMeshTrees( T_MAX_MESH_TREES );
+        SetTerrainTreeDistance( T_TREE_DISTANCE );
+
+        //audio
+        SetVolume( VOLUME );
+
+        //mouse 
+        SetMouseSensivity( MOUSE_SENSITIVITY );
+    }
     
     public void SetToSelectedPreset( )
     {
@@ -549,13 +602,6 @@ public class SettingsManager : MonoBehaviour
             SetShadowDistance( QualitySettings.shadowDistance );
             SetShadowCascades( QualitySettings.shadowCascades );
         }
-        
-        //SetTerrainDetailDistance( PlayerPrefs.GetFloat( T_DETAIL_DISTANCE_STR, T_DETAIL_DISTANCE ) );
-        //SetTerrainDetailDensity( PlayerPrefs.GetFloat( T_DETAIL_DENSITY_STR, T_DETAIL_DENSITY ) );
-        //SetTerrainTreeDistance( PlayerPrefs.GetFloat( T_TREE_DISTANCE_STR, T_TREE_DISTANCE ) );
-        //SetTerrainBillboardStart( PlayerPrefs.GetFloat( T_BILLBOARD_START_STR, T_BILLBOARD_START ) );
-        //SetTerrainFadeLength( PlayerPrefs.GetFloat( T_FADE_LENGTH_STR, T_FADE_LENGTH ) );
-        //SetTerrainMaxMeshTrees( PlayerPrefs.GetInt( T_MAX_MESH_TREES_STR, T_MAX_MESH_TREES ) );
     }
 
 }

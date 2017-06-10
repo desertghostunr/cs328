@@ -19,9 +19,7 @@ public class QualityPresetDropDown : MonoBehaviour
 
     private void OnEnable( )
     {
-        List<Dropdown.OptionData> options;
-        int index = 0;
-
+        
         m_dropDown = GetComponentInChildren<Dropdown>( );
         
         m_qualitySliderManagers = GetComponentsInChildren<SliderManager>( );
@@ -29,18 +27,28 @@ public class QualityPresetDropDown : MonoBehaviour
         m_toggles = GetComponentsInChildren<Toggle>( );
         m_toggleManagers = GetComponentsInChildren<ToggleManager>( );
 
+        GetQualityLevel( );
+        
+        OnOptionChange( );
+    }
+
+    public void GetQualityLevel( )
+    {
+        List<Dropdown.OptionData> options;
+        int index = 0;
+
         options = m_dropDown.options;
 
-        for( index = 0; index < options.Count; index++ )
+        for ( index = 0; index < options.Count; index++ )
         {
-            if( QualitySettings.names[QualitySettings.GetQualityLevel( )] == options[ index ].text )
+            if ( QualitySettings.names[QualitySettings.GetQualityLevel( )] == options[index].text )
             {
                 m_dropDown.value = index;
                 break;
             }
         }
 
-        OnOptionChange( );
+
     }
 
     public void OnOptionChange( )

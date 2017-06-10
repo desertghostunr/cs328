@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     private GameObject pausePanel;
     private GameObject defaultScreen;
     private GameObject instructionScreen;
+    private GameObject settingsMenu;
     private RotateCameraMouse mouseRotationScript;
 
     private AudioSource [] audioSources;
@@ -29,6 +30,7 @@ public class GameManager : MonoBehaviour
         pausePanel = GameObject.Find("Pause Panel");
         defaultScreen = GameObject.Find("Default");
         instructionScreen = GameObject.Find("Instructions");
+        settingsMenu = GameObject.Find( "Settings Menu" );
 
         mouseRotationScript = FindObjectOfType<RotateCameraMouse>( );
 
@@ -38,7 +40,8 @@ public class GameManager : MonoBehaviour
         // Order of disable important
         defaultScreen.SetActive(false);
         instructionScreen.SetActive(false);
-        pausePanel.SetActive(false);
+        settingsMenu.SetActive( false );
+        pausePanel.SetActive(false);        
 
         victoryText = GameObject.FindGameObjectWithTag("VictoryText");
 
@@ -73,6 +76,12 @@ public class GameManager : MonoBehaviour
         if (isPaused)
         {
             // Unpause game
+            if ( settingsMenu.activeSelf )
+            {
+                PlayerPrefs.Save( );
+                settingsMenu.SetActive( false );
+            }
+
             Time.timeScale = 1;
             pausePanel.SetActive(false);
             isPaused = false;
