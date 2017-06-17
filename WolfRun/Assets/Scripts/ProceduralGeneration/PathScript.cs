@@ -364,7 +364,7 @@ public class PathScript : MonoBehaviour
 
                 treePosition.x = ( 1.0f / tData.size.x ) * currX;
                 treePosition.z = ( 1.0f / tData.size.z ) * currY;
-                treePosition.y = tData.GetInterpolatedHeight( treePosition.x, treePosition.z );
+                treePosition.y = tData.GetInterpolatedHeight( treePosition.x, treePosition.z ) / tData.size.y;
 
                 tree.position = treePosition;
                 

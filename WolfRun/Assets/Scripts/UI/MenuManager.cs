@@ -5,7 +5,6 @@ using System.Collections;
 
 public class MenuManager : MonoBehaviour
 {
-    private AsyncOperation loadingOperation;
 
     private void Start( )
     {
@@ -23,10 +22,8 @@ public class MenuManager : MonoBehaviour
         Application.Quit();
     }
 
-    IEnumerator LoadGame( )
+    public static IEnumerator LoadGame( )
     {
-        loadingOperation = SceneManager.LoadSceneAsync( "scene1", LoadSceneMode.Single );
-
-        yield return loadingOperation;
+        yield return SceneManager.LoadSceneAsync( "scene1", LoadSceneMode.Single );
     }
 }

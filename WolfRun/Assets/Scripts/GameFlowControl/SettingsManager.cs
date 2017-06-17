@@ -12,6 +12,7 @@ public class SettingsManager : MonoBehaviour
 
     public static readonly float VOLUME = 1.0f;
 
+    public static readonly bool MOUSE_LOOK = true;
     public static readonly float MOUSE_SENSITIVITY = 2.0f;
 
     public static readonly string QUALITY_PRESET_DEFAULT = "Good";
@@ -28,7 +29,8 @@ public class SettingsManager : MonoBehaviour
 
     public static readonly string VOLUME_STR = "volume-level";
 
-    public static readonly string MOUSE_SENSIVITY_STR = "mouse-sensitivity";
+    public static readonly string MOUSE_LOOK_STR = "mouse-look";
+    public static readonly string MOUSE_SENSITIVITY_STR = "mouse-sensitivity";
 
     public static readonly string QUALITY_PRESET_STR = "quality-preset";
     public static readonly string TEXTURE_QUALITY_STR = "master-texture-quality";
@@ -77,11 +79,22 @@ public class SettingsManager : MonoBehaviour
 
         terrains = FindObjectsOfType<Terrain>( );
 
+        SetMouseSensivity( PlayerPrefs.GetFloat( MOUSE_SENSITIVITY_STR, MOUSE_SENSITIVITY )  );
+
+        SetMouseLook( IntToBool( PlayerPrefs.GetInt( MOUSE_LOOK_STR, BoolToInt( MOUSE_LOOK ) ) ) );
+
+        SetVolume( PlayerPrefs.GetFloat( VOLUME_STR, VOLUME ) );
+
+        SetQualityPreset( PlayerPrefs.GetString( QUALITY_PRESET_STR, QualitySettings.names[QualitySettings.GetQualityLevel( )] ) );
+
+        SetToSelectedPreset( );
+
         if ( modeControl )
         {
             modeControl.mode = PlayerPrefs.GetInt( MODE_STR, MODE );
             modeControl.aiIntelligence = PlayerPrefs.GetFloat( AI_INTELLIGENCE_STR, AI_INTELLIGENCE );
-            modeControl.mouseSensitivity = PlayerPrefs.GetFloat( MOUSE_SENSIVITY_STR, MOUSE_SENSITIVITY );
+            modeControl.mouseSensitivity = PlayerPrefs.GetFloat( MOUSE_SENSITIVITY_STR, MOUSE_SENSITIVITY );
+            modeControl.useMouseLook = IntToBool( PlayerPrefs.GetInt( MOUSE_LOOK_STR, BoolToInt( MOUSE_LOOK ) ) );
         }
 
         for ( index = 0; index < terrains.Length; index++ )
@@ -98,12 +111,6 @@ public class SettingsManager : MonoBehaviour
 
             terrains[index].treeCrossFadeLength = PlayerPrefs.GetFloat( T_FADE_LENGTH_STR, T_FADE_LENGTH );
         }
-
-        AudioListener.volume = PlayerPrefs.GetFloat( VOLUME_STR, VOLUME );
-
-        SetQualityPreset( PlayerPrefs.GetString( QUALITY_PRESET_STR, QUALITY_PRESET_DEFAULT ) );
-
-        SetToSelectedPreset( );
     }
 
     public static void SetPlayerPrefs( int val, string playerPrefsName, int defaultVal )
@@ -149,14 +156,14 @@ public class SettingsManager : MonoBehaviour
         SetPlayerPrefs( difficulty, AI_INTELLIGENCE_STR, AI_INTELLIGENCE );
     }
 
-    // mouse sensitivity
-    public void SetMouseSensivity( float sensitivity )
+    //mouse
+    public void SetMouseLook( bool look )
     {
         PlayerCharacterController playerCC;
 
         RotateCameraMouse rotateCamera;
 
-        SetPlayerPrefs( sensitivity, MOUSE_SENSIVITY_STR, MOUSE_SENSITIVITY );
+        SetPlayerPrefs( BoolToInt( look ), MOUSE_LOOK_STR, BoolToInt( MOUSE_LOOK ) );
 
         playerCC = FindObjectOfType<PlayerCharacterController>( );
 
@@ -164,12 +171,36 @@ public class SettingsManager : MonoBehaviour
 
         if ( playerCC )
         {
-            playerCC.mouseSensitivity = PlayerPrefs.GetFloat( MOUSE_SENSIVITY_STR, MOUSE_SENSITIVITY );
+            playerCC.SetTurnWithMouse( IntToBool( PlayerPrefs.GetInt( MOUSE_LOOK_STR, BoolToInt( MOUSE_LOOK ) ) ) );
         }
 
         if ( rotateCamera )
         {
-            rotateCamera.sensitivity = PlayerPrefs.GetFloat( MOUSE_SENSIVITY_STR, MOUSE_SENSITIVITY );
+            rotateCamera.useMouseLook = IntToBool( PlayerPrefs.GetInt( MOUSE_LOOK_STR, BoolToInt( MOUSE_LOOK ) ) );
+        }
+    }
+
+    // mouse sensitivity
+    public void SetMouseSensivity( float sensitivity )
+    {
+        PlayerCharacterController playerCC;
+
+        RotateCameraMouse rotateCamera;
+
+        SetPlayerPrefs( sensitivity, MOUSE_SENSITIVITY_STR, MOUSE_SENSITIVITY );
+
+        playerCC = FindObjectOfType<PlayerCharacterController>( );
+
+        rotateCamera = FindObjectOfType<RotateCameraMouse>( );
+
+        if ( playerCC )
+        {
+            playerCC.mouseSensitivity = PlayerPrefs.GetFloat( MOUSE_SENSITIVITY_STR, MOUSE_SENSITIVITY );
+        }
+
+        if ( rotateCamera )
+        {
+            rotateCamera.sensitivity = PlayerPrefs.GetFloat( MOUSE_SENSITIVITY_STR, MOUSE_SENSITIVITY );
         }
     }
 
@@ -548,6 +579,7 @@ public class SettingsManager : MonoBehaviour
 
         //mouse 
         SetMouseSensivity( MOUSE_SENSITIVITY );
+        SetMouseLook( MOUSE_LOOK );
     }
     
     public void SetToSelectedPreset( )

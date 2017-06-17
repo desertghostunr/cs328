@@ -55,7 +55,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetButtonDown("Cancel"))
+        if ( Input.GetButtonDown("Cancel") && gameGoing )
         {
             TogglePauseState();
         }
@@ -131,6 +131,34 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("Menu");
     }
 
+    public void Retry( )
+    {
+        gameGoing = true;
+
+        if ( isBlackScreen ) ToggleBlackScreen( );
+
+        if ( mouseRotationScript )
+        {
+            mouseRotationScript.enabled = true;
+        }
+
+        StartCoroutine( MenuManager.LoadGame( ) );
+    }
+
+    public void ReturnToMenu( )
+    {
+        gameGoing = true;
+
+        if ( isBlackScreen ) ToggleBlackScreen( );
+
+        if ( mouseRotationScript )
+        {
+            mouseRotationScript.enabled = true;
+        }
+
+        SceneManager.LoadScene( "Menu" );
+    }
+
     public void ToggleBlackScreen()
     {
         blackScreenCamera.SetActive(!isBlackScreen);
@@ -149,13 +177,27 @@ public class GameManager : MonoBehaviour
             victoryText.GetComponent<Text>().text = winner + " won!";
         }
         
-        StartCoroutine( GameOver( ) );
+        if( gameGoing )
+        {
+            StartCoroutine( GameOver( ) );
+        }        
     }
 
     IEnumerator GameOver( )
     {
+
         gameGoing = false;
-        yield return new WaitForSeconds( 5.0f );
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+
+
+        if ( mouseRotationScript )
+        {
+            mouseRotationScript.enabled = false;            
+        }
+
+        yield return new WaitForSeconds( 60.0f );
         gameGoing = true;
         if (isBlackScreen) ToggleBlackScreen();
         SceneManager.LoadScene( "Menu" );

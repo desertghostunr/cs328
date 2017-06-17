@@ -8,6 +8,8 @@ public class NPCharacterController : UniversalCharacterController
 {
     private NavMeshAgent m_agent;
 
+    private NavMeshPath m_pausedPath = null;
+
 	// Use this for initialization
 	protected override void Start ()
     {
@@ -69,6 +71,28 @@ public class NPCharacterController : UniversalCharacterController
         return IsActiveEnabledAndReady( ) ? m_agent.SetDestination( dest ) : false;
     }
 
+    public void Resume( )
+    {
+        if( m_pausedPath != null )
+        {
+            m_agent.SetPath( m_pausedPath );
+            m_pausedPath = null;
+        }
+        
+    }
+
+    public void Stop( )
+    {
+        if( m_agent.path != null )
+        {
+            m_pausedPath = m_agent.path;
+        }
+
+        m_agent.velocity = Vector3.zero;
+
+        m_agent.ResetPath( );
+    }
+
     public Vector3 GetNearestLocationOnNavMesh( Vector3 position )
     {
         NavMeshHit closestHit;
@@ -83,6 +107,6 @@ public class NPCharacterController : UniversalCharacterController
 
     public bool IsActiveEnabledAndReady( )
     {
-        return ( m_agent.isActiveAndEnabled && m_agent.isOnNavMesh );
+        return ( m_agent && m_agent.isActiveAndEnabled && m_agent.isOnNavMesh );
     }
 }

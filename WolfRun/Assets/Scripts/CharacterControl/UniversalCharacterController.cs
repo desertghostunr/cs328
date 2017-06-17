@@ -120,6 +120,11 @@ public class UniversalCharacterController : MonoBehaviour
         m_canMove = canMove;
     }
 
+    public bool CanMove( )
+    {
+        return m_canMove;
+    }
+
     public void SetMovementInhibitor( float movementInhibitor )
     {
         m_movementInhibitor = movementInhibitor;

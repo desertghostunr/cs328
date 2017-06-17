@@ -1,9 +1,21 @@
-This software contains copyrighted material supplied by third parties. 
+Wolf Run: The Wolf Who Howled Boy
+
+Copyright (c) 2017 Andrew Frost and Tyler Goffinet - All Rights Reserved.
+
+This software is provided as-is without warranty of any kind. This software may not be redistributed without permission from the respective Copyright holders.
+
+This software contains copyrighted material created by third parties. None of the third parties described endorse this software or any of this software's associations. The copyrighted material created by third parties are used under the licence agreements described below.
 
 This software includes the use of audio created by third parties. 
 
-This software uses Wind, Soft. Crickets.wav Wind and Crickets by Leandros.Ntounis at http://www.freesound.org/people/Leandros.Ntounis/sounds/163607/ under the creative commons Attribution License at https://creativecommons.org/licenses/by/3.0/ . No changes were made to the material provided.
+This software uses Wind, Soft. Crickets.wav Wind and Crickets by Leandros.Ntounis at http://www.freesound.org/people/Leandros.Ntounis/sounds/163607/ under the creative commons Attribution License [CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)]. No changes were made to the material provided.
 
-This software uses ANGRY DOG BARK SNARL with Reverb.wav by Jaylew1987 at http://www.freesound.org/people/Jaylew1987/sounds/260777/ under the creative commons Attribution License at https://creativecommons.org/licenses/by/3.0/ . No changes were made to the material provided.
+This software uses ANGRY DOG BARK SNARL with Reverb.wav by Jaylew1987 at http://www.freesound.org/people/Jaylew1987/sounds/260777/ under the creative commons Attribution License [CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)]. No changes were made to the material provided.
+
+This software uses 33.wav by y89312 at https://www.freesound.org/people/y89312/sounds/139901/ under the creative commons Attribution License [CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)]. The material was amplified.
+
+This software uses wolf-growl.wav by newagesoup at https://www.freesound.org/people/newagesoup/sounds/338674/ under the creative commons Attribution License [CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)]. Silence was removed from the end of the recording. The material was amplified.
+
+This software includes the use of images created by third parties.
 
 This software uses https://commons.wikimedia.org/wiki/File%3AGrey_wolf_P1130270.jpg By Gunner Ries Amphibol (Own work (own photo)) [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0)], via Wikimedia Commons from Wikimedia Commons and has been modified for the purpose of being used as a texture.

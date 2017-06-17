@@ -10,9 +10,20 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
 
     public float searchRange = 50.0f;
 
+    public AudioClip growlClip;
+    public AudioClip barkingClip;
+
+    public bool active = true;
+
     private bool m_enemyScentDetected = false;
     private WolfHowl m_trackingAbility;
     private GameObject m_trackedObject;
+
+    private bool m_enemySighted = false;
+
+    private bool m_intimidated = false;
+
+    private AudioSource m_audioSouce;
 
     // Use this for initialization
     protected override void Start ()
@@ -20,11 +31,19 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
         base.Start( );
 
         m_trackingAbility = GetComponent<WolfHowl>( );
+
+        m_audioSouce = GetComponent<AudioSource>( );
 	}
 	
-	// Update is called once per frame
-	void Update ()
+	protected override void FixedUpdate ()
     {
+        if( !active || !m_NPC.CanMove( ) )
+        {
+            return;
+        }
+
+        base.FixedUpdate( );
+
         if ( !m_travelingToLoc )
         {
             m_travelingToLoc = PlanDestination( );
@@ -44,6 +63,12 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
         {
             m_destination = m_trackedObject.transform.position;
             m_NPC.SetDestination( m_destination );
+            m_enemySighted = true;
+        }
+
+        if ( m_enemySighted && !m_intimidated && Vector3.Distance( transform.position, m_destination ) <= 7 )
+        {
+            StartCoroutine( IntimidationCoroutine( ) );
         }
 
         AttackEnemy( );
@@ -106,18 +131,63 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
 
     void AttackEnemy( )
     {
-        int index;       
+        int index;
+
+        if( m_trackedObject )
+        {
+            return;
+        }
 
         for( index = 0; index < m_spottedEnemies.Count; index++ )
         {
             if ( m_spottedEnemies.Count == 1 || attackEnemyProbability > Random.value )
             {
-                m_destination = m_spottedEnemies[index].transform.position;
+                m_trackedObject = m_spottedEnemies[index];
+
+                m_destination = m_trackedObject.transform.position;
 
                 m_travelingToLoc = m_NPC.SetDestination( m_destination );
 
-                break;
+                m_enemySighted = true;
+
+                m_intimidated = false;
+
+                return;
             }
         }
+
+        m_enemySighted = false;
+        m_intimidated = false;
+    }
+
+    IEnumerator IntimidationCoroutine( )
+    {
+        float timeUsed = 0, delay;
+        AudioClip clip;
+
+        m_NPC.SetCanMove( false );
+        m_NPC.Stop( );
+
+        m_intimidated = true;
+
+        delay = Random.Range( 1.5f, 3.5f );        
+        
+
+        while ( timeUsed < delay )
+        {
+            clip = Random.value < 0.5f ? growlClip : barkingClip;
+
+            m_audioSouce.clip = clip;
+            m_audioSouce.volume = 1;
+
+            m_audioSouce.Play( );
+
+            yield return new WaitForSeconds( clip.length );
+
+            timeUsed += m_audioSouce.clip.length;
+        }
+
+        m_NPC.SetCanMove( true );
+        m_NPC.Resume( );
     }
 }

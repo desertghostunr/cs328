@@ -21,6 +21,8 @@ public class ModeController : MonoBehaviour
     public float aiIntelligence = 0.0f;
 
     public float mouseSensitivity = 2.0f;
+
+    public bool useMouseLook = true;
     
     public GameObject boyPrefab = null;
     public GameObject wolfPrefab = null;
@@ -120,11 +122,13 @@ public class ModeController : MonoBehaviour
         if( playerCC )
         {
             playerCC.mouseSensitivity = mouseSensitivity;
+            playerCC.SetTurnWithMouse(useMouseLook);
         }
 
         if( rotateCamera )
         {
             rotateCamera.sensitivity = mouseSensitivity;
+            rotateCamera.useMouseLook = useMouseLook;
         }
 
         playerCC = hunter.GetComponent<PlayerCharacterController>( );
@@ -133,11 +137,13 @@ public class ModeController : MonoBehaviour
         if ( playerCC )
         {
             playerCC.mouseSensitivity = mouseSensitivity;
+            playerCC.SetTurnWithMouse( useMouseLook );
         }
 
         if ( rotateCamera )
         {
             rotateCamera.sensitivity = mouseSensitivity;
+            rotateCamera.useMouseLook = useMouseLook;
         }
 
 
@@ -149,10 +155,4 @@ public class ModeController : MonoBehaviour
         boyAIPrefab = null;
         wolfAIPrefab = null;
     }
-	
-	// Update is called once per frame
-	void Update ()
-    {
-		
-	}
 }

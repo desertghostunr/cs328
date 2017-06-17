@@ -21,12 +21,15 @@ public class WolfHowl : MonoBehaviour
 
     private bool abilityInUse = false;
 
+    private bool restoreNeeded = false;
+
     private UniversalCharacterController m_universalCC;
 
     private WolfSense senseController;
 
     private AudioSource wAudio;
 
+    private RotateCameraMouse m_rotCamMouse;
 
     // Use this for initialization
     void Start ()
@@ -36,6 +39,8 @@ public class WolfHowl : MonoBehaviour
         wAudio = GetComponent<AudioSource>( );
 
         m_universalCC = GetComponent<UniversalCharacterController>( );
+
+        m_rotCamMouse = GetComponentInChildren<RotateCameraMouse>( );
     }
 	
 	// Update is called once per frame
@@ -69,6 +74,11 @@ public class WolfHowl : MonoBehaviour
             }
 
             abilityInUse = true;
+
+            if ( m_rotCamMouse )
+            {
+                m_rotCamMouse.rotateAlongX = true;
+            }
         }
 
         if ( abilityInUse && !wAnimator.GetCurrentAnimatorStateInfo( 0 ).IsName( abilityAnimationStateName ) )
@@ -84,10 +94,17 @@ public class WolfHowl : MonoBehaviour
         {
             //don't move wolf if animation is playing
             m_universalCC.SetCanMove( false );
+            restoreNeeded = true;
         }
-        else if ( !abilityInUse )
+        else if ( !abilityInUse && restoreNeeded )
         {
+            restoreNeeded = false;
             m_universalCC.SetCanMove( true );
+
+            if ( m_rotCamMouse )
+            {
+                m_rotCamMouse.rotateAlongX = false;
+            }
         }
     }
 

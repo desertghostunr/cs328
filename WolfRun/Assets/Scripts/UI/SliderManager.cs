@@ -15,11 +15,20 @@ public class SliderManager : MonoBehaviour
 
     private bool m_changed = false;
 
+    private Text m_sliderText;
+
     private void OnEnable( )
     {
         m_slider = GetComponent<Slider>( );
 
         m_slider.value = isInt ? PlayerPrefs.GetInt( prefsName ) : PlayerPrefs.GetFloat( prefsName );
+
+        m_sliderText = GetComponentInChildren<Text>( );
+
+        if ( m_sliderText )
+        {
+            m_sliderText.text = m_slider.value.ToString( isInt ? "0" : "0.0" );
+        }
     }
 
     private void Update( )
@@ -27,6 +36,12 @@ public class SliderManager : MonoBehaviour
         if ( m_slider && m_changed )
         {
             m_slider.value = isInt ? PlayerPrefs.GetInt( prefsName ) : PlayerPrefs.GetFloat( prefsName );
+
+            if( m_sliderText )
+            {
+                m_sliderText.text = m_slider.value.ToString( isInt ? "0" : "0.0" );
+            }
+            
 
             m_changed = false;
         }

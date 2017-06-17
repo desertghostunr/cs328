@@ -18,10 +18,10 @@ public class SimpleNPCHunted : SimpleNPCIntelligence
         base.Start( );
 	}
 	
-	// Update is called once per frame
-	void Update ()
+	protected override void FixedUpdate ()
     {
-        
+        base.FixedUpdate( );
+
 		if( !m_travelingToLoc )
         {
             m_travelingToLoc = PlanDestination( );            

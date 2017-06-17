@@ -17,6 +17,7 @@ public class PlayerCharacterController : UniversalCharacterController
     public string jumpMotionInput = "Jump";
 
     public bool turnWithMouse = false;
+    public bool canModifyTurnWithMouse = false;
     public float mouseSensitivity = 2.0f;
 
     public bool toggleCrouch = false;
@@ -219,5 +220,13 @@ public class PlayerCharacterController : UniversalCharacterController
         }
 
         return Mathf.Atan2( move.x, move.z );
+    }
+
+    public void SetTurnWithMouse( bool val )
+    {
+        if( canModifyTurnWithMouse )
+        {
+            turnWithMouse = val;
+        }
     }
 }
