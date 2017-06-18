@@ -20,8 +20,11 @@ public class NPCharacterController : UniversalCharacterController
         base.Start( );
 	}
 
-    // Update is called once per frame
-    void Update ()
+    protected void Update( )
+    {
+        Animate( );
+    }
+    protected void FixedUpdate( )
     {
         if ( m_canMove )
         {
@@ -33,7 +36,6 @@ public class NPCharacterController : UniversalCharacterController
             m_agent.velocity = Vector3.zero;
         }
         
-        Animate( );
 
         if ( !m_agent.isOnNavMesh )
         {
@@ -47,7 +49,7 @@ public class NPCharacterController : UniversalCharacterController
     public override void Move(  )
     {
         m_agent.speed = m_movementInhibitor * moveSpeed;
-        m_agent.angularSpeed = m_movementInhibitor * rotSpeed;
+        m_agent.angularSpeed = rotSpeed;
 
         if( m_agent.velocity.magnitude > 0 )
         {

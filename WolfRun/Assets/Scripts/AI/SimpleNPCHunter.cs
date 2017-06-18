@@ -5,7 +5,7 @@ using UnityEngine;
 public class SimpleNPCHunter : SimpleNPCIntelligence
 {
     public string trackedObjectTag = "Scent";
-    public float enemySmellAccuracyProbability = 0.9f;
+    public float enemySmellAccuracyProbability = 0.5f;
     public float attackEnemyProbability = 0.95f;
 
     public float searchRange = 50.0f;
@@ -61,9 +61,7 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
 
         if( m_trackedObject )
         {
-            m_destination = m_trackedObject.transform.position;
-            m_NPC.SetDestination( m_destination );
-            m_enemySighted = true;
+            FollowEnemy( );
         }
 
         if ( m_enemySighted && !m_intimidated && Vector3.Distance( transform.position, m_destination ) <= 7 )
@@ -109,6 +107,25 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
         return true;
     }
 
+    public void FollowEnemy( )
+    {
+        float distance;
+        float offset;
+        Vector3 errorVector = Vector3.zero;
+
+        distance = Vector3.Distance( transform.position, m_trackedObject.transform.position );
+
+        offset = distance * Mathf.Clamp01( 1.0f - Mathf.Min( intelligence, 0.66f ) );
+
+        errorVector.x = Random.Range( -1f * offset, offset );
+        errorVector.z = Random.Range( -1f * offset, offset );
+
+        m_destination = ( m_trackedObject.transform.position + errorVector );
+        m_NPC.SetDestination( m_NPC.GetNearestLocationOnNavMesh( m_destination ) );
+        m_enemySighted = true;
+    }
+
+
     IEnumerator TrackEnemy( )
     {
         GameObject[] scentGOs;
@@ -133,7 +150,8 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
     {
         int index;
 
-        if( m_trackedObject )
+        if( m_trackedObject 
+            && Vector3.Distance( m_trackedObject.transform.position, transform.position ) < sightDistance )
         {
             return;
         }

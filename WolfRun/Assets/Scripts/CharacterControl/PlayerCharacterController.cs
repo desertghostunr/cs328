@@ -149,6 +149,9 @@ public class PlayerCharacterController : UniversalCharacterController
                    + Jump( ); //y movement in world
 
         m_controller.Move( movement * Time.fixedDeltaTime );
+
+        //information about the speed the player is moving
+        m_movementSpeed = movement.magnitude;
     }
 
     private Vector3 Jump( )

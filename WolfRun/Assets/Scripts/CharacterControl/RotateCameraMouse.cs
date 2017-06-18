@@ -52,13 +52,13 @@ public class RotateCameraMouse : MonoBehaviour
         {
             transform.localPosition = new Vector3( Mathf.Lerp( transform.localPosition.x,
                                                                m_localFollowPos.x,
-                                                               6 * Time.fixedDeltaTime ),
+                                                               4 * Time.fixedDeltaTime ),
                                                    Mathf.Lerp( transform.localPosition.y,
                                                                m_localFollowPos.y,
-                                                               6 * Time.fixedDeltaTime ),
+                                                               4 * Time.fixedDeltaTime ),
                                                    Mathf.Lerp( transform.localPosition.z,
                                                                m_localFollowPos.z,
-                                                               6 * Time.fixedDeltaTime ) );
+                                                               4 * Time.fixedDeltaTime ) );
 
             transform.LookAt( player, Vector3.up );
 

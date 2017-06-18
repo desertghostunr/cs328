@@ -8,8 +8,13 @@ public class WolfSense : MonoBehaviour
     private bool senseReady = true;
     private bool senseOn = false;
 
+    public float senseCharge = 15.0f;
+
     private GameObject[] smell;
-    
+
+
+    private float m_chargeMax;
+
 	void Start ()
     {
         int index;
@@ -28,6 +33,8 @@ public class WolfSense : MonoBehaviour
         {
             smell[index].SetActive( false );
         }
+
+        m_chargeMax = senseCharge;
     }
 
     public bool SenseOn( )
@@ -35,28 +42,35 @@ public class WolfSense : MonoBehaviour
         return senseOn;
     }
 
-    public void ActivateSense( )
+    public bool ActivateSense( )
     {
         if( senseReady )
         {
             StartCoroutine( StartSense( ) );
         }
+
+        return senseReady;
+    }
+
+    public void DeactivateSwitch( )
+    {
+        senseOn = false;
     }
 
     IEnumerator StartSense( )
     {
-        int dIndex = 0;
         int index = 0;
 
         if(m_camera )
         {
             m_camera.gameObject.SetActive( true );
         }
+
         senseOn = true;
         
         senseReady = false;
 
-        for( dIndex = 0; dIndex < 15; dIndex++ )
+        while( senseOn && senseCharge > 0.0f )
         {
             for ( index = 0; index < smell.Length; index++ )
             {
@@ -64,6 +78,8 @@ public class WolfSense : MonoBehaviour
             }
 
             yield return new WaitForSeconds( 1.0f );
+
+            senseCharge -= 1.0f;
         }
 
         if ( m_camera )
@@ -78,9 +94,21 @@ public class WolfSense : MonoBehaviour
             smell[index].SetActive( false );
         }
 
+        StartCoroutine( RechargeSense( ) );
+
         yield return new WaitForSeconds( 10.0f );
 
         senseReady = true;
+    }
+
+    IEnumerator RechargeSense( )
+    {
+        while( !senseOn && senseCharge < m_chargeMax )
+        {
+            yield return new WaitForSeconds( 0.333f );
+
+            senseCharge += 0.333f;
+        }
     }
     
 }

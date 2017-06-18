@@ -9,9 +9,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
 public class UniversalCharacterController : MonoBehaviour
-{
-
-    
+{    
 
     public string forwardAnimationName = "Forward";
     public string turnAnimationName = "Turn";
@@ -47,6 +45,8 @@ public class UniversalCharacterController : MonoBehaviour
     protected bool m_previousJumpingValue = false;
 
     protected float m_movementInhibitor = 1.0f;
+
+    protected float m_movementSpeed = 1;
 
     protected Vector3 m_jumpVelocity = Vector3.zero;
     protected float m_jumpLeg = 0.0f;
@@ -133,6 +133,16 @@ public class UniversalCharacterController : MonoBehaviour
     public bool Moving( )
     {
         return m_moving;
+    }
+
+    public bool Crouching( )
+    {
+        return canCrouch && m_isCrouched;
+    }
+
+    public float NormalizedMovementSpeed01( )
+    {
+        return m_movementSpeed / ( moveSpeed == 0 ? 1: moveSpeed );
     }
 
     private float GetAnimationTurnValue( float forward, float turn, float side )

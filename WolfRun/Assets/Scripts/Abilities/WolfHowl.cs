@@ -31,6 +31,8 @@ public class WolfHowl : MonoBehaviour
 
     private RotateCameraMouse m_rotCamMouse;
 
+    private bool switchedOn = false;
+
     // Use this for initialization
     void Start ()
     {
@@ -46,9 +48,17 @@ public class WolfHowl : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        if ( playerControlled && Input.GetButton( abilityActivator ) )
+        if ( playerControlled && !switchedOn && Input.GetButtonDown( abilityActivator ) )
         {
             ActivateAbility( );
+
+            switchedOn = true;
+        }
+        else if( playerControlled && Input.GetButtonDown( abilityActivator ) )
+        {
+            switchedOn = false;
+
+            senseController.DeactivateSwitch( );
         }
 
         ProcessAbility( );

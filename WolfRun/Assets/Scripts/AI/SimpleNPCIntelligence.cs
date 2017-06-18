@@ -60,8 +60,10 @@ public class SimpleNPCIntelligence : MonoBehaviour
 
     public virtual void LookForTarget( )
     {
+        DetectionManager detMngr;
         Collider[] colliders; 
         int index;
+        float detProb;
         float sightingProb = 0.0f, dotProd = 0.0f, distance;
 
         if( targetTag == null && enemyTag == null )
@@ -79,18 +81,28 @@ public class SimpleNPCIntelligence : MonoBehaviour
             {
                 m_destination = colliders[index].transform.position;
                 m_NPC.SetDestination( m_destination );
-                break;
             }
-            else if( enemyTag != null && colliders[index].tag == enemyTag )
+
+            if ( enemyTag != null && colliders[index].tag == enemyTag )
             {
+                detMngr = colliders[index].GetComponentInChildren<DetectionManager>( );
+
+                if( detMngr )
+                {
+                    detProb = detMngr.DetectionLevel( );
+                }
+                else
+                {
+                    detProb = Random.value;
+                }
+
                 dotProd = Vector3.Dot( transform.forward, ( transform.position - colliders[index].transform.position ) );
 
-                sightingProb = Random.Range( 1.0f - intelligence, 1.0f );
+                sightingProb = detProb;
 
                 distance = Vector3.Distance( transform.position, colliders[index].transform.position );
 
-                if ( sightingProb > dotProd 
-                     && distance < ( sightDistance * Random.Range( 0.0f, enemySeenProbability ) ) )
+                if ( sightingProb > dotProd && distance < ( sightDistance * detProb ) )
                 {
                     m_spottedEnemies.Add( colliders[index].gameObject );
                 }

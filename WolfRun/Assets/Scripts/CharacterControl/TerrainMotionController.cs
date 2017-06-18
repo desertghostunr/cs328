@@ -22,7 +22,7 @@ public class TerrainMotionController : MonoBehaviour
 
     private GameObject m_currentTerrainGO = null;
 
-    private float m_currentWeight = 1.0f;
+    public float m_currentWeight { get; private set; } 
 
 	// Use this for initialization
 	void Start ()
@@ -30,6 +30,8 @@ public class TerrainMotionController : MonoBehaviour
         m_universalCC = GetComponent<UniversalCharacterController>( );
 
         m_terrainInformation = FindObjectOfType<TerrainInfo>( );
+
+        m_currentWeight = 1.0f;
 	}
 	
 	
