@@ -179,9 +179,9 @@ public class MeshGenerator : MonoBehaviour
 
                     if( terrain != null ) //added
                     {
-                        pos.y = terrain.SampleHeight( pos );
+                        pos.y = terrain.terrainData.GetInterpolatedHeight( x / terrain.terrainData.size.x, y / terrain.terrainData.size.z );
                     }
-
+                    
                     controlNodes[x, y] = new ControlNode( pos, map[x, y] == 1, squareSize );
                 }
             }

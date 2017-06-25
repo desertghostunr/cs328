@@ -188,8 +188,7 @@ public class SimpleNPCHunter : SimpleNPCIntelligence
 
         m_intimidated = true;
 
-        delay = Random.Range( 1.5f, 3.5f );        
-        
+        delay = Random.Range( 1.5f, 3.5f );            
 
         while ( timeUsed < delay )
         {

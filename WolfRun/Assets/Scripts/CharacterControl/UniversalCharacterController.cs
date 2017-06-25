@@ -127,7 +127,10 @@ public class UniversalCharacterController : MonoBehaviour
 
     public void SetMovementInhibitor( float movementInhibitor )
     {
-        m_movementInhibitor = movementInhibitor;
+        if ( movementInhibitor < m_movementInhibitor )
+        {
+            m_movementInhibitor = movementInhibitor;
+        }               
     }
 
     public bool Moving( )

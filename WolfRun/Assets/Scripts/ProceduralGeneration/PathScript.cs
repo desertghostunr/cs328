@@ -12,6 +12,10 @@ using UnityEngine.SceneManagement;
 
 public class PathScript : MonoBehaviour
 {
+    public float heightVariation = .005f;
+    public float perlinMultiplier = 0.001f;
+    public float perlinExtremes = 25f;
+
     public bool hunterAI = false;
     public bool huntedAI = false;
     public float xStartCenter = 50;
@@ -81,6 +85,7 @@ public class PathScript : MonoBehaviour
         System.DateTime t1 =  System.DateTime.Now;
         float[,,] alphaMap = null;
         float x, y;
+        Vector3 tmpPosition;
 
         boy = GameObject.Find( "Boy" );
         wolf = GameObject.Find( "Wolf" );
@@ -93,7 +98,7 @@ public class PathScript : MonoBehaviour
 
         InitializeAlphaMapToLayer( ref alphaMap, grassTerrainTextureLayer );
 
-        
+        GenerateTerrain( );
 
         if( !InitializePath( ) )
         {
@@ -140,9 +145,13 @@ public class PathScript : MonoBehaviour
 
         endWorld += transform.position;
 
-        boy.transform.position = new Vector3( startWorld.x, boy.transform.position.y, startWorld.z );        
+        boy.transform.position = new Vector3( startWorld.x, terrain.SampleHeight( startWorld ) + 0.25f , startWorld.z );        
+        
+        fire.transform.position = new Vector3( endWorld.x, terrain.SampleHeight( endWorld ), endWorld.z );
 
-        fire.transform.position = new Vector3( endWorld.x, fire.transform.position.y, endWorld.z );
+        tmpPosition = tData.size - startWorld;
+
+        wolf.transform.position = new Vector3( tmpPosition.x, terrain.SampleHeight( tmpPosition ) + 0.5f, tmpPosition.z );
 
         //gameManager = FindObjectOfType<GameManager>( );
 
@@ -154,6 +163,35 @@ public class PathScript : MonoBehaviour
         System.DateTime t2 = System.DateTime.Now;
 
         Debug.Log( "Path Generation Time:" + " " + ( t2.Subtract( t1 ).TotalSeconds ) );
+    }
+
+    public void GenerateTerrain( )
+    {
+        float x, y;
+
+        float xOffset, yOffset;
+
+        float xPerlin, yPerlin;
+
+        float[,] heightMap = terrain.terrainData.GetHeights( 0, 0, tData.heightmapWidth, 
+                                                                   tData.heightmapHeight);
+
+        xOffset = Random.Range( 0, 1000 );
+        yOffset = Random.Range( 0, 1000 );
+
+        for( y = perlinExtremes; y < tData.heightmapHeight - perlinExtremes; y++ )
+        {
+            yPerlin = ( y + yOffset ) * perlinMultiplier;
+
+            for( x = perlinExtremes; x < tData.heightmapWidth - perlinExtremes; x++ )
+            {
+                xPerlin = ( x + xOffset ) * perlinMultiplier;
+
+                heightMap[(int)y, (int)x] = heightVariation * Mathf.PerlinNoise( xPerlin, yPerlin );
+            }
+        }
+
+        tData.SetHeights( 0, 0, heightMap );
     }
 
     public List<Vector2> GeneratePath( )
@@ -223,8 +261,16 @@ public class PathScript : MonoBehaviour
             position = nextPosition;
 
             if( ( its > minIterations ) 
-                && ( Vector2.Distance( start, nextPosition ) >= startAndEndMinDist ) )
+                && ( Vector2.Distance( start, position ) >= startAndEndMinDist ) 
+                && CloseEnoughToEdge( position, 10f ) )
             {
+                break;
+            }
+            else if( ( its > minIterations )
+                       && ( Vector2.Distance( start, position ) >= startAndEndMinDist ) )
+            {
+                position.x = ( tData.detailResolution - pathExtremes - tolerance );
+
                 break;
             }
         }
@@ -234,6 +280,14 @@ public class PathScript : MonoBehaviour
         pointList.Add( end );
 
         return pointList;
+    }
+
+    public bool CloseEnoughToEdge( Vector2 point, float minDistToEdge )
+    {
+        return ( Mathf.Abs( point.x + tolerance - ( tData.detailResolution - pathExtremes ) ) <= minDistToEdge
+                 || Mathf.Abs( point.y + tolerance - ( tData.detailResolution - pathExtremes ) ) <= minDistToEdge
+                 || Mathf.Abs( point.x - tolerance - pathExtremes ) <= minDistToEdge
+                 || Mathf.Abs( point.y - tolerance - pathExtremes ) <= minDistToEdge );
     }
 
     public bool InitializePath( )
@@ -294,7 +348,7 @@ public class PathScript : MonoBehaviour
             }
         }
 
-        mGen.GenerateMesh( map, 1.0f );
+        mGen.GenerateMesh( map, 1.0f, terrain );
 
 
         return true;
